@@ -6,6 +6,26 @@ from imutils import contours
 import pytesseract
 import re
 
+def quadView(v1, v2, v3=None, v4=None):
+  v1=cv2.resize(v1, None, fx=.5, fy=.5, interpolation = cv2.INTER_CUBIC)
+  v2=cv2.resize(v2, None, fx=.5, fy=.5, interpolation = cv2.INTER_CUBIC)
+  finalView = np.hstack((v1, v2))
+  if v3 is not None:
+    v3=cv2.resize(v3, None, fx=.5, fy=.5, interpolation = cv2.INTER_CUBIC)
+    v4=cv2.resize(v4, None, fx=.5, fy=.5, interpolation = cv2.INTER_CUBIC)
+    botView = np.hstack((v3, v4))
+    finalView = np.vstack((finalView, botView))
+  return finalView
+
+def findColor(img, color1=np.array([0,170,125]), color2=np.array([70,255,255])):
+  hsvImg = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+  mask = cv2.inRange(hsvImg, color1, color2)
+  return cv2.bitwise_and(img, img, mask=mask)
+
+def processFrame(img):
+  orange = findColor(img)
+  return quadView(img, orange)
+
 def showImage(img):
   cv2.imshow("Display", img)
   cv2.waitKey()
@@ -31,10 +51,13 @@ def ocr(grayIm):
         label = match.group(0)
     return text, label, match
 
-def collectImage(target):
-  ref = cv2.imread(target)
-  ref = cv2.cvtColor(ref, cv2.COLOR_BGR2GRAY)
-  thresh = cv2.threshold(ref, 10, 255, cv2.THRESH_BINARY_INV)[1]
+def collectImage(target, file=True):
+  if file:
+    ref = cv2.imread(target)
+  else:
+    ref = target
+  grey = cv2.cvtColor(ref, cv2.COLOR_BGR2GRAY)
+  thresh = cv2.threshold(grey, 10, 255, cv2.THRESH_BINARY_INV)[1]
   _, refContours, heirarchy = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
   return ref, thresh, refContours, heirarchy
 
