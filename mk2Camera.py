@@ -22,9 +22,28 @@ def findColor(img, color1=np.array([0,170,125]), color2=np.array([70,255,255])):
   mask = cv2.inRange(hsvImg, color1, color2)
   return cv2.bitwise_and(img, img, mask=mask)
 
-def processFrame(img):
+def processColor(img):
   orange = findColor(img)
-  return quadView(img, orange)
+  orange = cv2.cvtColor(orange, cv2.COLOR_RGB2GRAY)
+  center = idTape(orange)
+  orange = standardize(img, orange)
+  out = img.copy()
+  if center is not None:
+    cv2.circle(out, (center[0]-240, center[1]), 120, (0,255,0), 2)
+  return quadView(img, out), center
+
+def processFrame(img):
+  ret, process, angled, match, text, label = findSticker(img)
+  ret = standardize(img, ret)
+  process = standardize(img, process)
+  angled = standardize(img, angled, False)
+  return quadView(img, ret, process, angled), label
+
+def standardize(img, ret, grey=True):
+  if grey:
+    ret = cv2.cvtColor(ret, cv2.COLOR_GRAY2RGB)
+  ret = cv2.resize(ret, dsize=(img.shape[1], img.shape[0]))
+  return ret
 
 def showImage(img):
   cv2.imshow("Display", img)
@@ -36,6 +55,10 @@ def matchLabel(text):
         return match
     else:
         match = re.search('([A-Z]|[0-9]){4}\.([A-Z]|[0-9]){3}\.([A-Z]|[0-9]){2}', text)
+    if match:
+      return match
+    else:
+      match = re.search('([A-Z]){2}\.([A-Z]|[0-9]){3}\.([A-Z]|[0-9]){2}', text)
     return match
 
 def matchLabel2(text):
@@ -46,7 +69,7 @@ def matchLabel2(text):
 def ocr(grayIm):
     label = ""
     text = pytesseract.image_to_string(grayIm)
-    match = matchLabel2(text)
+    match = matchLabel(text)
     if match:
         label = match.group(0)
     return text, label, match
@@ -68,9 +91,27 @@ def getBoxChars(rect):
   yCenter = rect[1] + ySpan/2
   return (int(xSpan)+20, int(ySpan)+20), (int(xCenter), int(yCenter))
 
-def correctAngle(pImg, rawImg):
+def idTape(orange):
+  _, refContours, heirarchy = cv2.findContours(orange, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+  biggest = 0
+  tRect = None
+  for c in refContours:
+    area = cv2.contourArea(c)
+    rect,size = boxContour(c)
+    if size > biggest:
+      biggest = size
+      tRect = rect
+  if tRect is not None:
+    tSize, tCenter = getBoxChars(tRect)
+    for i in range(2):
+      if tSize[i] < 200 or tSize[i] > 400:
+        return None
+    return tCenter
+  return None
+
+
+def correctAngle(pImg, rawImg, sub=True):
   _, refContours, heirarchy = cv2.findContours(pImg, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-  #display = cv2.cvtColor(rawImg, cv2.COLOR_GRAY2RGB)
   biggest = 0
   tAngle = 0
   tContour = 0
@@ -86,18 +127,11 @@ def correctAngle(pImg, rawImg):
         tAngle = rect[4]
         tRect = rect
         fContour = c
-        '''
-        (x,y),(MA,ma),angle = cv2.fitEllipse(c)
-        if biggest < size:
-          biggest = area
-          tAngle = angle
-          centerX = x
-          centerY = y
-          cv2.ellipse(display, center = (int(x),int(y)), axes = (int(MA/2),int(ma/2)), angle=angle, startAngle=0, endAngle=360, color=(0,0,255))
-          cv2.circle(display, (int(x),int(y)), radius=2, color=(0,255,0))'''
   if tRect is not None:
     tSize, tCenter = getBoxChars(tRect)
-    print(tSize)
+    process = pImg.copy()
+    x, y, w, h, _ = tRect
+    cv2.rectangle(process, (x,y), (x+w,y+h), (255,0,0))
     if tAngle < -45:
       tAngle += 90
       #tCenter = (tCenter[1], tCenter[0])
@@ -106,25 +140,26 @@ def correctAngle(pImg, rawImg):
     rows = dims[0]
     cols = dims[1]
     rotated = cv2.warpAffine(rawImg, M, (cols, rows), 1)
-    rotated = cv2.getRectSubPix(rotated, tSize, tCenter)
-    return rotated
+    if sub:
+      rotated = cv2.getRectSubPix(rotated, tSize, tCenter)
+      return process, rotated
+    else:
+      return process, rotated, tCenter
   return None
 
 def findSticker(img):
   squareKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
   blur = cv2.bilateralFilter(img, 25, 25, 255)
-  ret = cv2.threshold(blur, 200, 255, cv2.THRESH_BINARY)[1]
-  #showImage(ret)
-  #ret = cv2.erode(ret, squareKernel, iterations=10)
-  #ret = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 5, 1)
+  ret = cv2.adaptiveThreshold(blur[:,:,0], 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 25, 3)
+  ret = cv2.erode(ret, squareKernel, iterations=4)
   ret = cv2.Canny(ret, 100,200)
-  angled = correctAngle(ret, blur)
+  process, angled = correctAngle(ret, blur)
   if angled is not None:
     text, label, match = ocr(angled)
-    print(text, match==None)
-    return angled, match, text, label
+    #print(text, match==None)
+    return ret, process, angled, match, text, label
   else:
-    return blur, False, "", ""
+    return ret, blur, blur, False, "", ""
 
 def boxContour(c):
   rect = cv2.minAreaRect(c)
