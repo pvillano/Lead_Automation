@@ -30,7 +30,7 @@ def processColor(img):
   out = img.copy()
   if center is not None:
     cv2.circle(out, (center[0]-240, center[1]), 120, (0,255,0), 2)
-  return quadView(img, out), center
+  return quadView(img, orange), center
 
 def processFrame(img):
   ret, process, angled, match, text, label = findSticker(img)
@@ -68,8 +68,8 @@ def matchLabel2(text):
 
 def ocr(grayIm):
     label = ""
-    pytesseract
-    text = pytesseract.image_to_string(grayIm, config="-c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUV.")
+    pytesseract.pytesseract.tesseract_cmd= r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+    text = pytesseract.image_to_string(grayIm,  config="-c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ.")
     match = matchLabel(text)
     if match:
         label = match.group(0)
@@ -82,7 +82,7 @@ def collectImage(target, file=True):
     ref = target
   grey = cv2.cvtColor(ref, cv2.COLOR_BGR2GRAY)
   thresh = cv2.threshold(grey, 10, 255, cv2.THRESH_BINARY_INV)[1]
-  _, refContours, heirarchy = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+  refContours, heirarchy = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
   return ref, thresh, refContours, heirarchy
 
 def getBoxChars(rect):
@@ -93,7 +93,7 @@ def getBoxChars(rect):
   return (int(xSpan)+20, int(ySpan)+20), (int(xCenter), int(yCenter))
 
 def idTape(orange):
-  _, refContours, heirarchy = cv2.findContours(orange, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+  refContours, heirarchy = cv2.findContours(orange, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
   biggest = 0
   tRect = None
   for c in refContours:
@@ -105,14 +105,14 @@ def idTape(orange):
   if tRect is not None:
     tSize, tCenter = getBoxChars(tRect)
     for i in range(2):
-      if tSize[i] < 200 or tSize[i] > 400:
+      if tSize[i] < 50 or tSize[i] > 400:
         return None
     return tCenter
   return None
 
 
 def correctAngle(pImg, rawImg, sub=True):
-  _, refContours, heirarchy = cv2.findContours(pImg, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+  refContours, heirarchy = cv2.findContours(pImg, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
   biggest = 0
   tAngle = 0
   tContour = 0

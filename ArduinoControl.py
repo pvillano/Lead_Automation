@@ -3,7 +3,7 @@ import mk2Camera
 import serial
 from time import sleep
 
-PORT = '/dev/cu.usbmodem14201'
+PORT = 'COM3'
 xCenter = 360
 yCenter = 640
 pixelsToMM = 23.4
@@ -17,12 +17,12 @@ def sendTo(ser, x, y):
   if ("Enter target x:" != line1):
     print(line1)
     return
-  sendLine(ser, x)
+  sendLine(ser, x.encode('utf-8'))
   line2 = getLine(ser)
   if ("Enter target y:" != line2):
     print(line2)
     return
-  sendLine(ser, y)
+  sendLine(ser, y.encode('utf-8'))
   pos1 = getLine(ser)
   xPos, yPos = sortData(pos1, xPos, yPos)
   pos2 = getLine(ser)
@@ -45,7 +45,7 @@ def getLine(ser):
   return decoded_bytes
 
 def sendLine(ser, data):
-  ser.write(str(data))
+  ser.write(data)
   ser.flush()
 
 def tryToFindLabel(cap, t):
@@ -93,35 +93,37 @@ def readLabels(number, x, y, ser, cap):
   positions = []
   for n in range(number):
     yTarget = y-(n*65.3)
-    sendTo(ser, x, yTarget)
+    sendTo(ser, str.format("%4.3f"%(x)), str.format("%4.3f"%(yTarget)))
     labels.append(tryToFindLabel(cap, 20))
     cX = x+25
-    sendTo(ser, cX, yTarget)
+    sendTo(ser, str.format("%4.3f"%(cX)), str.format("%4.3f"%(yTarget)))
     center = tryToFindTape(20, cX, yTarget, ser, cap)
     if center is None:
       cX = x+50
-      sendTo(ser, cX, yTarget)
+      sendTo(ser, str.format("%4.3f"%(cX)), str.format("%4.3f"%(yTarget)))
       center = tryToFindTape(20, cX, yTarget, ser, cap)
       if center is None:
         cX = x+75
-        sendTo(ser, cX, yTarget)
+        sendTo(ser, str.format("%4.3f"%(cX)), str.format("%4.3f"%(yTarget)))
         center = tryToFindTape(20, cX, yTarget, ser, cap)
     positions.append(center)
   return labels, positions
 
 def singlePass(number):
-  cap = cv2.VideoCapture(0)
+  cap = cv2.VideoCapture(1)
   ser = serial.Serial(PORT)
   print(getLine(ser))
-  labels, positions = readLabels(number, -50, 0, ser, cap)
-  sendTo(ser, 0, 0)
+  labels, positions = readLabels(number, -70, 0, ser, cap)
+  sendTo(ser, str.format("%4.3f"%(0)), str.format("%4.3f"%(0)))
   cap.release()
   ser.close()
   return(labels, positions)
 
 
 if __name__ == '__main__':
-  singlePass(8);
+  labels, positions = singlePass(8)
+  print(labels)
+  print(positions)
 '''
   while(True):
     ret, frame = cap.read()
