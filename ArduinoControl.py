@@ -9,6 +9,8 @@ yCenter = 640
 pixelsToMM = 23.4
 
 def sendTo(ser, x, y):
+  if ser is None:
+    ser = serial.Serial(PORT)
   xPos = 0
   yPos = 0
   line1 = getLine(ser)
@@ -54,7 +56,7 @@ def tryToFindLabel(cap, t):
     if "" != label:
       print("Found label")
       i = t
-    cv2.imshow('frame',processed)
+    cv2.imshow('processView',processed)
     cv2.waitKey(1)
     i+=1
   return label
@@ -64,7 +66,7 @@ def tryToFindTape(number, x, y, ser, cap):
   while i < number:
     ret, frame = cap.read()
     processed, center = mk2Camera.processColor(frame)
-    cv2.imshow('frame',processed)
+    cv2.imshow('processView',processed)
     cv2.waitKey(1)
     if center is not None:
       break
@@ -77,7 +79,7 @@ def tryToFindTape(number, x, y, ser, cap):
     print("Taking pictures")
     ret, frame = cap.read()
     ret, frame = cap.read()
-    cv2.imshow('frame',frame)
+    cv2.imshow('processView',frame)
     name = str(y)+".jpg"
     cv2.imwrite(name, frame)
     cv2.waitKey(500)
@@ -107,15 +109,19 @@ def readLabels(number, x, y, ser, cap):
     positions.append(center)
   return labels, positions
 
-if __name__ == '__main__':
+def singlePass(number):
   cap = cv2.VideoCapture(0)
   ser = serial.Serial(PORT)
   print(getLine(ser))
-  labels, positions = readLabels(8, -85, 0, ser, cap)
+  labels, positions = readLabels(number, -50, 0, ser, cap)
   sendTo(ser, 0, 0)
-  print(labels)
-  print(positions)
   cap.release()
+  ser.close()
+  return(labels, positions)
+
+
+if __name__ == '__main__':
+  singlePass(8);
 '''
   while(True):
     ret, frame = cap.read()

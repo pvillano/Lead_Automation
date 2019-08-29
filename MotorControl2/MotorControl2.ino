@@ -10,6 +10,10 @@ const int dirPinY = 6; //dir+ to 6
 const int stepPinY = 7; //pul+ to 7
 const int enPinY = 10; //en+ to 10
 
+const int maxInterval = 150;
+const int minInterval = 25;
+const int accelSteps = 30;
+
 class Motor{
   char motorName;
   int dirPin;
@@ -22,6 +26,7 @@ class Motor{
   unsigned long stepsRemaining;
   unsigned long lastMoveMicros;
   int interval;
+  int accelStepsLeft;
 
   public:
     Motor(int dPin, int sPin, int ePin, char n){
@@ -40,6 +45,7 @@ class Motor{
     stepsRemaining = 0;
     lastMoveMicros = 0;
     interval = 150;
+    accelStepsLeft = accelSteps;
   }
 
   void setInterval(int i){
@@ -76,6 +82,7 @@ class Motor{
       Step(stepsRemaining);
       curPos += (float(curDir)/conversionFactor);
       stepsRemaining -= 1;
+      //updateSpeed();
     }
     if (stepsRemaining == 0 and stepping){
       stepping = false;
@@ -83,6 +90,37 @@ class Motor{
       Serial.print("Reached Target ");
       Serial.println(curPos);
     }
+  }
+
+  void updateSpeed(){
+    if (stepsRemaining == 0){
+      interval = maxInterval;
+      return;
+    }
+    if ((stepsRemaining < accelSteps) and (interval < maxInterval)){
+      float change = 2*interval;
+      int stepsLeft = stepsRemaining-1;
+      change = change/((4*stepsLeft)+1);
+      //change = change*(accelSteps-stepsLeft)/(accelSteps);
+      interval = interval+change;
+      Serial.println(change);
+      return;
+    }
+    /*if (accelStepsLeft == accelSteps){
+      accelStepsLeft -= 1;
+      interval = 0.4142*interval;
+      return;
+    }*/
+    if (accelStepsLeft > 0){
+      accelStepsLeft -= 1;
+      float change = 2*interval;
+      float stepsLeft = accelSteps-accelStepsLeft;
+      change = change/((4*stepsLeft)+1);
+      change = change*(accelSteps-stepsLeft)/(accelSteps);
+      interval = max(interval-change, minInterval);
+      return;
+    }
+    interval = minInterval;
   }
 
   void Step(int stepsRemaining){

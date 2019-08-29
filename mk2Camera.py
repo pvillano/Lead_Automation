@@ -36,11 +36,11 @@ def processFrame(img):
   ret, process, angled, match, text, label = findSticker(img)
   ret = standardize(img, ret)
   process = standardize(img, process)
-  angled = standardize(img, angled, False)
+  angled = standardize(img, angled)
   return quadView(img, ret, process, angled), label
 
-def standardize(img, ret, grey=True):
-  if grey:
+def standardize(img, ret):
+  if len(ret.shape) < 3:
     ret = cv2.cvtColor(ret, cv2.COLOR_GRAY2RGB)
   ret = cv2.resize(ret, dsize=(img.shape[1], img.shape[0]))
   return ret
@@ -68,7 +68,8 @@ def matchLabel2(text):
 
 def ocr(grayIm):
     label = ""
-    text = pytesseract.image_to_string(grayIm)
+    pytesseract
+    text = pytesseract.image_to_string(grayIm, config="-c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUV.")
     match = matchLabel(text)
     if match:
         label = match.group(0)
@@ -149,11 +150,13 @@ def correctAngle(pImg, rawImg, sub=True):
 
 def findSticker(img):
   squareKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
-  blur = cv2.bilateralFilter(img, 25, 25, 255)
+  blur = cv2.bilateralFilter(img, 3, 25, 255)
   ret = cv2.adaptiveThreshold(blur[:,:,0], 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 25, 3)
   ret = cv2.erode(ret, squareKernel, iterations=4)
   ret = cv2.Canny(ret, 100,200)
-  process, angled = correctAngle(ret, blur)
+  gaus = cv2.GaussianBlur(blur, (9,9), 10)
+  unsharp = cv2.addWeighted(blur, 4, gaus, -3, 0)
+  process, angled = correctAngle(ret, unsharp)
   if angled is not None:
     text, label, match = ocr(angled)
     #print(text, match==None)
@@ -174,8 +177,9 @@ def boxContour(c):
   return rect, area
 
 def defaultRun():
-  vals = collectImage("s5.jpeg")
-  findSticker(vals[0])
+  vals = collectImage("s1.jpg")
+  cv2.imshow("t",processFrame(vals[0])[0])
+  cv2.waitKey()
   '''for i in range(1,8):
     target = 's'+str(i)+".jpeg"
     vals = collectImage(target)
