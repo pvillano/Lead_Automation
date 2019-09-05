@@ -1,33 +1,25 @@
 import pyautogui
 from time import sleep
+from buttonTask import *
 
 PICPATH = 'C:\\Users\\SciAps\\Documents\\Lead_Automation\\automationScreenshots\\'
+ANALYZE_CHECK_I = 'Capture.PNG'
 ANALYZE = 'Capture1.PNG'
+ANALYZE_CHECK_F = 'Capture2.PNG'
 DATAENTRY = 'Capture3.PNG'
+DATA_READY = 'Capture5.PNG'
 KEYBOARD = 'Capture4.PNG'
 KEYBOARD_ALT = 'Capture4a.PNG'
+SMALL_KEYBOARD = 'Capture5.PNG'
 FRAME_TOP = 'Capture6.PNG'
 START = 'Capture7.PNG'
 CLEAR = 'Capture8.PNG'
 ENTER = 'Capture9.PNG'
 DONESIGN = 'Capture10.PNG'
+TIME = 'Capture11.PNG'
 MAX_WAIT = 120
 SCREEN_HEIGHT = 440
-
-def checkCondition(img, screen):
-  pic = PICPATH+img
-  ret = False
-  standards = 1.0
-  while not ret:
-    try:
-      x, y = pyautogui.locateCenterOnScreen(pic, confidence=standards)
-      ret = True
-    except Exception as e:
-      sleep(.2)
-      standards = standards*.9
-      if standards < .5:
-        return False
-  return ret
+DEBUG = True
 
 def findScreenBounds(topFile = FRAME_TOP):
   pic = PICPATH+topFile
@@ -120,14 +112,6 @@ def fancyPrint(char):
   else:
     pyautogui.hotkey(char)
     #print("Other")
-    
-
-def clickAnalyze(screen):
-  analyze = clickButton(ANALYZE, screen)
-  return analyze
-
-def clickDataEntry(screen):
-  return clickButton(DATAENTRY, screen)
 
 def enterData(sampleName, screen):
   x, y = findAltOnScreen(KEYBOARD,KEYBOARD_ALT, screen)
@@ -144,30 +128,38 @@ def clickStart(screen):
   return clickButton(START, screen)
 
 def XRFStart(sampleList, screen):
-  working = clickAnalyze(screen)
-  if working:
-    working = clickDataEntry(screen)
-  if working:
-    for sample in sampleList:
-      working = XRFCycle(sample, screen)
-      if not working:
-        print("An error occured")
-        break
+  clickAnalyze = buttonTask(PICPATH, ANALYZE_CHECK_I, ANALYZE, ANALYZE_CHECK_F, testScreen)
+  error = clickAnalyze.regulatedCycle()
+  if error:
+    print(error)
+    return
+  clickDataEntry = buttonTask(PICPATH, ANALYZE_CHECK_F, DATAENTRY, None, screen)
+  error = clickDataEntry.regulatedCycle()
+  if error:
+    print(error)
+    return
+  enterData = dataEntryTask(screen)
+  clickStart = startTask(screen)
+  for sample in sampleList:
+    working = XRFCycle(sample, screen, enterData, clickStart)
+    if not working:
+      print("An error occured")
+      break
 
-def XRFCycle(sampleName, screen):
-  working = enterData(sampleName, screen)
-  if working:
-    working = clickStart(screen)
-    sleep(.5)
-    pyautogui.hotkey('enter')
-  if not working:
-    print("There was an error")
+def XRFCycle(sampleName, screen, enterData, clickStart):
+  error = enterData.regulatedCycle(sampleName)
+  if error:
+    print(error)
+    return False
+  if not error:
+    error = clickStart.regulatedCycle()
+  if error:
+    print(error)
     return False
   else:
     sleep(3)
     if waitFor(DONESIGN, screen):
       sleep(4)
-      #print("Hitting enter now")
       pyautogui.hotkey('enter')
       print("Everything fine w/ %s"%sampleName)
       return True
@@ -184,6 +176,5 @@ if __name__ == '__main__':
       testList.append(test2Str)
   testScreen = findScreenBounds()
   print(testScreen)
-  #XRFCycle('Teting')
   XRFStart(testList, testScreen)
   #XRFCycle("Test1")

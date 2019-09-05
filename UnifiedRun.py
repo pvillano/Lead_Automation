@@ -1,16 +1,18 @@
 import ArduinoControl
 import XRFControl
 from GantryControl import Gantry
+import cv2
+from time import sleep
 
-XRF_X_OFFSET = 0
-XRF_Y_OFFSET = -165
+XRF_X_OFFSET = -12
+XRF_Y_OFFSET = -170
 TRAY_SIZE = 8
 
 def mainLoop():
   gant = Gantry()
-  #labels, positions = ArduinoControl.singlePass(TRAY_SIZE, gant)
-  labels = ['SS.003.P2', 'SS.004.P2', 'SS.006.D1', '', 'SS.006.S2', '', 'SS.006.D2', 'SS.004.D3']
-  positions = [('-49.274', '8.761'), ('-50.726', '-55.471'), ('-49.915', '-121.241'), ('-49.615', '-184.575'), ('-52.222', '-250.559'), ('-51.880', '-317.226'), ('-48.932', '-383.381'), ('-51.068', '-448.852')]
+  labels, positions = ArduinoControl.singlePass(TRAY_SIZE, gant)
+  #labels = ['SS.003.P2', 'SS.004.P2', 'SS.006.D1', '', 'SS.006.S2', '', 'SS.006.D2', 'SS.004.D3']
+  #positions = [('-49.274', '8.761'), ('-50.726', '-55.471'), ('-49.915', '-121.241'), ('-49.615', '-184.575'), ('-52.222', '-250.559'), ('-51.880', '-317.226'), ('-48.932', '-383.381'), ('-51.068', '-448.852')]
   print(labels)
   print(positions)
   targetLabels = correctLabels(labels)
@@ -18,11 +20,17 @@ def mainLoop():
   print("***********************")
   print(targetLabels)
   print(targetPositions)
-  #mXRF = XRFControl.XRF()
+  mXRF = XRFControl.XRF()
   for i in range(TRAY_SIZE):
-    if (targetPositions[i] is not None):# and (mXRF.working):
+    if (targetPositions[i] is not None) and (mXRF.working):
       gant.sendTo(targetPositions[i][0], targetPositions[i][1])
-      #mXRF.sample(targetLabels[i])
+      while gant.checkMoving():
+        sleep(1)
+      success = mXRF.sample(targetLabels[i])
+      if success:
+        print("Succesfully captured sample "+str(i)+"- "+targetLabels[i])
+      else:
+        print("Problem reading "+str(i)+"- "+targetLabels[i])
   gant.sendTo(str(0),str(0))
   gant.close()
 
