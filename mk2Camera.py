@@ -135,6 +135,7 @@ def correctAngle(pImg, rawImg, sub=True):
     cv2.rectangle(process, (x,y), (x+w,y+h), (255,0,0))
     if tAngle < -45:
       tAngle += 90
+    tAngle += 180
       #tCenter = (tCenter[1], tCenter[0])
     M = cv2.getRotationMatrix2D(tCenter ,tAngle,1)
     dims = rawImg.shape

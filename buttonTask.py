@@ -89,8 +89,11 @@ class startTask(buttonTask):
             pyautogui.hotkey('enter')
             sleep(1)
             if not self.bSearchRoutine(self.iPic):
-                print("Couldn't resolve")
-                return INIT_ERROR
+                print("Trying manual click")
+                self.clickButton(self.picpath+ENTER)
+                if not self.bSearchRoutine(self.iPic):
+                    print("Couldn't resolve")
+                    return INIT_ERROR
         self.clickButton(self.picpath+self.pic)
         if not self.ok:
             return CLICK_ERROR
@@ -126,6 +129,7 @@ class dataEntryTask(buttonTask):
         if self.ok:
             for c in sampleName:
                 self.fancyPrint(c)
+            sleep(.1)
             pyautogui.hotkey('enter')
             return FINE
         return RESPONSE_ERROR
@@ -172,3 +176,6 @@ class dataEntryTask(buttonTask):
         success = True
         self.ok = success
         
+if __name__ == '__main__':
+    test = dataEntryTask(None)
+    test.regulatedCycle(None)

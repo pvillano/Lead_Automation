@@ -1,9 +1,9 @@
-import mk1Auto as m1
+import mk2Auto as m1
 import pyautogui
 
 class XRF:
   """Controls for the XRF"""
-  working = False
+  error = False
   started = False
   screen = (-1,-1,-1,-1)
 
@@ -11,15 +11,15 @@ class XRF:
     self.screen = m1.findScreenBounds()
     if self.screen == (-1,-1,-1,-1):
       return
-    self.working = m1.clickAnalyze(self.screen)
-    if self.working:
-      self.working = m1.clickDataEntry(self.screen)
-    self.started = self.working
+    self.error, self.a, self.b = m1.XRFStart(None, self.screen)
+    if self.error:
+      print("Error")
+    self.started = not self.error
 
   def sample(self, sampleName='Unknown'):
-    if self.started and self.working:
-      self.working = m1.XRFCycle(sampleName, self.screen)
-    return self.working
+    if self.started and not self.error:
+      self.error = not m1.XRFCycle(sampleName, self.screen, self.a, self.b)
+    return not self.error
 
 
 #if __name__ == '__main__':

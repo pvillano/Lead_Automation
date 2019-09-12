@@ -4,33 +4,28 @@ from GantryControl import Gantry
 import cv2
 from time import sleep
 
-XRF_X_OFFSET = -12
-XRF_Y_OFFSET = -170
+XRF_X_OFFSET = 27
+XRF_Y_OFFSET = 30
 TRAY_SIZE = 8
 
 def mainLoop():
   gant = Gantry()
-  labels, positions = ArduinoControl.singlePass(TRAY_SIZE, gant)
-  #labels = ['SS.003.P2', 'SS.004.P2', 'SS.006.D1', '', 'SS.006.S2', '', 'SS.006.D2', 'SS.004.D3']
-  #positions = [('-49.274', '8.761'), ('-50.726', '-55.471'), ('-49.915', '-121.241'), ('-49.615', '-184.575'), ('-52.222', '-250.559'), ('-51.880', '-317.226'), ('-48.932', '-383.381'), ('-51.068', '-448.852')]
-  print(labels)
-  print(positions)
-  targetLabels = correctLabels(labels)
-  targetPositions = correctPositions(positions)
-  print("***********************")
-  print(targetLabels)
-  print(targetPositions)
+  ard = ArduinoControl.arduinoControl(gant)
   mXRF = XRFControl.XRF()
   for i in range(TRAY_SIZE):
-    if (targetPositions[i] is not None) and (mXRF.working):
-      gant.sendTo(targetPositions[i][0], targetPositions[i][1])
+    label, position = ard.capture()
+    targetLabel = correctLabels(label)
+    targetPosition = correctPositions(position)
+    if (targetPosition is not None) and (not mXRF.error):
+      gant.sendTo(targetPosition[0][0], targetPosition[0][1])
       while gant.checkMoving():
         sleep(1)
-      success = mXRF.sample(targetLabels[i])
+      success = mXRF.sample(targetLabel[0])
       if success:
-        print("Succesfully captured sample "+str(i)+"- "+targetLabels[i])
+        print("Succesfully captured sample "+str(i)+"- "+targetLabel[0])
       else:
-        print("Problem reading "+str(i)+"- "+targetLabels[i])
+        print("Problem reading "+str(i)+"- "+targetLabel[0])
+  ard.close()
   gant.sendTo(str(0),str(0))
   gant.close()
 
@@ -42,7 +37,7 @@ def correctPositions(positions):
   ret = []
   for position in positions:
     if position is not None:
-      p0 = float(position[0]) + XRF_X_OFFSET;
+      p0 = max(float(position[0]) - XRF_X_OFFSET, 0);
       p1 = float(position[1]) + XRF_Y_OFFSET;
       ret.append([str.format("%4.3f"%(p0)), str.format("%4.3f"%(p1))])
     else:

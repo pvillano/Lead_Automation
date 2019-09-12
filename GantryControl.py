@@ -1,15 +1,25 @@
 import serial
 
-PORT = 'COM4'
+PORT = 'COM8'
 
 class Gantry():
     def __init__(self):
         self.ser = serial.Serial(PORT)
-        getLine(self.ser) #Clear 1st line on serial
+        self.ser.baudrate = 115200
+        #getLine(self.ser) #Clear 1st line on serial
         self.verbose = True
         self.moving = False
 
     def sendTo(self, x, y):
+        self.moving = True
+        command = "g0 x"+str(x)+" y"+str(y)+"\n"
+        sendLine(self.ser, command.encode('utf-8'))
+        getLine(self.ser)
+        while (self.checkMoving()):
+            pass
+        return
+
+    def sendToOld(self, x, y):
         self.moving = True
         xPos = 0
         yPos = 0
@@ -32,6 +42,12 @@ class Gantry():
         self.moving = False
 
     def checkMoving(self):
+        if self.moving:
+            getState = "$stat\n"
+            sendLine(self.ser, getState.encode('utf-8'))
+            ret = getLine(self.ser)
+            getLine(self.ser)
+            self.moving = (ret[-4:-1]=='Run')
         return self.moving
 
     def close(self):
@@ -39,7 +55,7 @@ class Gantry():
 
 def getLine(ser):
   ser_bytes = ser.readline()
-  decoded_bytes = (ser_bytes[0:len(ser_bytes)-2].decode('utf-8'))
+  decoded_bytes = (ser_bytes.decode('utf-8'))
   ser.flush()
   return decoded_bytes
 
@@ -57,13 +73,7 @@ def sortData(pos, x, y):
   return x, y
 
 if __name__ == '__main__':
-    ser = serial.Serial('COM3')
-    ser.baudrate = 115200
-    print(ser)
-    t=input('Press q to exit\n')
-    while(t != 'q'):
-        ser_bytes = ser.read(10)
-        print(ser_bytes)
-        decoded_bytes = ser_bytes.decode('utf-8')
-        print(decoded_bytes)
-        #t=input('Press q to exit\n')
+    gant = Gantry()
+    gant.sendTo(str(50),str(100))
+    gant.sendTo(str(0),str(0))
+    

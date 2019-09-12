@@ -128,23 +128,25 @@ def clickStart(screen):
   return clickButton(START, screen)
 
 def XRFStart(sampleList, screen):
-  clickAnalyze = buttonTask(PICPATH, ANALYZE_CHECK_I, ANALYZE, ANALYZE_CHECK_F, testScreen)
+  clickAnalyze = buttonTask(PICPATH, ANALYZE_CHECK_I, ANALYZE, ANALYZE_CHECK_F, screen)
   error = clickAnalyze.regulatedCycle()
   if error:
     print(error)
-    return
+    return error, None, None
   clickDataEntry = buttonTask(PICPATH, ANALYZE_CHECK_F, DATAENTRY, None, screen)
   error = clickDataEntry.regulatedCycle()
   if error:
     print(error)
-    return
+    return error, None, None
   enterData = dataEntryTask(screen)
   clickStart = startTask(screen)
+  return error, enterData, clickStart
+  '''
   for sample in sampleList:
     working = XRFCycle(sample, screen, enterData, clickStart)
     if not working:
       print("An error occured")
-      break
+      break'''
 
 def XRFCycle(sampleName, screen, enterData, clickStart):
   error = enterData.regulatedCycle(sampleName)
