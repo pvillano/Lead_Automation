@@ -21,8 +21,18 @@ class XRF:
       self.error = not m1.XRFCycle(sampleName, self.screen, self.a, self.b)
     return not self.error
 
+  def reset(self):
+    self.error = False
 
-#if __name__ == '__main__':
+
+if __name__ == '__main__':
+  mXRF = XRF()
+  success = True
+  i = 0
+  while (i < 20 and success):
+    targetLabel = "Sample " + str(i)
+    success = mXRF.sample(targetLabel)
+    i += 1
   #r = (r[0],r[1],r[2],r[3]+440)
   #print(r)
   #pyautogui.screenshot('temp.png', region = r)

@@ -19,6 +19,15 @@ class Gantry():
             pass
         return
 
+    def home(self):
+        self.moving = True
+        command = "g28.2 x0 y0\n"
+        sendLine(self.ser, command.encode('utf-8'))
+        getLine(self.ser)
+        while (self.checkMoving()):
+            pass
+        return
+
     def sendToOld(self, x, y):
         self.moving = True
         xPos = 0

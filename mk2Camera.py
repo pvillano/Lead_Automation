@@ -23,13 +23,14 @@ def findColor(img, color1=np.array([0,170,125]), color2=np.array([70,255,255])):
   return cv2.bitwise_and(img, img, mask=mask)
 
 def processColor(img):
-  orange = findColor(img)
+  #For finding filters- just leave defaults for orange tape
+  orange = findColor(img, color1=np.array([0,0,0]), color2=np.array([255,255,55]))
   orange = cv2.cvtColor(orange, cv2.COLOR_RGB2GRAY)
   center = idTape(orange)
   orange = standardize(img, orange)
   out = img.copy()
   if center is not None:
-    cv2.circle(out, (center[0]-240, center[1]), 120, (0,255,0), 2)
+    cv2.circle(img, (center[0], center[1]), 120, (0,255,0), 2)
   return quadView(img, orange), center
 
 def processFrame(img):

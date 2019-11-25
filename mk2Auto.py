@@ -17,7 +17,10 @@ CLEAR = 'Capture8.PNG'
 ENTER = 'Capture9.PNG'
 DONESIGN = 'Capture10.PNG'
 TIME = 'Capture11.PNG'
+RET_ARROW = 'Capture12.PNG'
+PROGRAM_ICON = 'Capture13.PNG'
 MAX_WAIT = 120
+MAX_REPEATS = 2
 SCREEN_HEIGHT = 440
 DEBUG = True
 
@@ -127,6 +130,31 @@ def enterData(sampleName, screen):
 def clickStart(screen):
   return clickButton(START, screen)
 
+def clickBack(screen):
+  clickButton(RET_ARROW, screen)
+  x, y = findAltOnScreen(KEYBOARD, KEYBOARD_ALT, screen)
+  i = 0
+  while (x == -1) and i < MAX_REPEATS:
+    sleep(1)
+    clickButton(RET_ARROW, screen)
+    x, y = findAltOnScreen(KEYBOARD, KEYBOARD_ALT, screen)
+    i += 1
+  return (x != 1)
+
+def reopen():
+  clickButton(PROGRAM_ICON, None)
+  #sleep(1)
+  clickButton(PROGRAM_ICON, None)
+  x, y = findOnScreen(START, None)
+  if x == -1:
+    print("Screen still not open. Trying again...")
+    #sleep(1)
+    clickButton(PROGRAM_ICON, None)
+    if x == -1:
+      print("Couldn't reopen")
+      return False
+  return True
+
 def XRFStart(sampleList, screen):
   clickAnalyze = buttonTask(PICPATH, ANALYZE_CHECK_I, ANALYZE, ANALYZE_CHECK_F, screen)
   error = clickAnalyze.regulatedCycle()
@@ -156,18 +184,27 @@ def XRFCycle(sampleName, screen, enterData, clickStart):
   if not error:
     error = clickStart.regulatedCycle()
   if error:
-    print(error)
-    return False
-  else:
-    sleep(3)
-    if waitFor(DONESIGN, screen):
-      sleep(4)
-      pyautogui.hotkey('enter')
+    print("Couldn't find start, refreshing")
+    opened = reopen()
+    if opened:
+      error = clickStart.regulatedCycle()
+      if error:
+        print("refresh failed")
+        return False
+    else:
+      print("reopen failed")
+      return False
+  sleep(3)
+  if waitFor(DONESIGN, screen):
+    if clickBack(screen):
       print("Everything fine w/ %s"%sampleName)
       return True
     else:
-      print("Timed out on %s"%sampleName)
+      print("Couldn't escape display w/ %s"%sampleName)
       return False
+  else:
+    print("Timed out on finding display w/ %s"%sampleName)
+    return False
 
 if __name__ == '__main__':
   testList = []
@@ -178,5 +215,6 @@ if __name__ == '__main__':
       testList.append(test2Str)
   testScreen = findScreenBounds()
   print(testScreen)
-  XRFStart(testList, testScreen)
+  reopen()
+  #XRFStart(testList, testScreen)
   #XRFCycle("Test1")
