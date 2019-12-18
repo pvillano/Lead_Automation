@@ -12,7 +12,7 @@ from time import sleep, time
 XRF_X_OFFSET = -24.23
 XRF_Y_OFFSET = -35.19
 TRAY_SIZE = 14
-SAMPLES_TO_READ = 14*12
+SAMPLES_TO_READ = 14*1
 DEBUG = False
 
 def mainLoop():
