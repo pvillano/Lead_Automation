@@ -2,16 +2,17 @@ import RobotControl
 import XRFControl
 import cv2
 from time import sleep, time
+import argparse
 
 DEBUG = False
 TRAYS = 0
 FILTERS = 1
 
-def mainLoop(mode = FILTERS, samples = (14*2)):
+def mainLoop(mode, samples, home):
   start_time = time()
   (xrfXOffset, xrfYOffset, traySize) = getSettings(mode = mode)
   robot = RobotControl.robotControl(mode = mode)
-  if askToHome():
+  if home:
     robot.home()
   mXRF = XRFControl.XRF()
   i = 0
@@ -50,6 +51,7 @@ def mainLoop(mode = FILTERS, samples = (14*2)):
     print("Time: %s seconds, %s minutes" % ((elapsed), (elapsed/60.0)))
   robot.close()
 
+#Redundant
 def askToHome():
   yes = input("Home AXLE before start? (y/n): ")
   while (yes != 'y') and (yes != 'n'):
@@ -86,4 +88,20 @@ def getSettings(mode):
     return (0, 0, 0)
 
 if __name__ == '__main__':
-  mainLoop()
+  #Default settings:
+  mode = TRAYS
+  samples = 8*1
+  home = True
+  text = 'Consolidated XRF automation software, used to control the AXLE gantry and interface with the XRF GUI'
+  parser = argparse.ArgumentParser(description = text)
+  parser.add_argument("-f", "--filters", help="Filter mode- for use with filter trays", action="store_true")
+  parser.add_argument("-s", "--samples", help="Number of samples to test", type=int)
+  parser.add_argument("-c", "--continuous", help="Continuous mode- disables homing", action="store_true")
+  args = parser.parse_args()
+  if args.filters:
+    mode = FILTERS
+  if args.samples:
+    samples = args.samples
+  if args.continuous:
+    home = False
+  mainLoop(mode, samples, home)
