@@ -7,6 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+import UnifiedRun
 
 MODES = {"Filters": 0, "Test Kits": 1, "Soil Samples": 2}
 
@@ -113,6 +114,7 @@ class Ui_MainWindow(object):
         print(self.type)
         print(self.number)
         print(self.name)
+        UnifiedRun.mainLoop(self.type, self.number, True) 
         self.pushButton.setEnabled(False)
         self.pushButton_2.setEnabled(False)
 

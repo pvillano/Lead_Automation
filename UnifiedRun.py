@@ -5,10 +5,10 @@ from time import sleep, time
 import argparse
 
 DEBUG = False
-TRAYS = 0
-FILTERS = 1
+TRAYS = 1
+FILTERS = 0
 
-def mainLoop(mode, samples, home):
+def mainLoop(mode, samples, home = False):
   start_time = time()
   (xrfXOffset, xrfYOffset, traySize) = getSettings(mode = mode)
   robot = RobotControl.robotControl(mode = mode)
@@ -100,7 +100,7 @@ if __name__ == '__main__':
   args = parser.parse_args()
   if args.filters:
     mode = FILTERS
-  if args.samples:
+  if args.samples is not None:
     samples = args.samples
   if args.continuous:
     home = False
