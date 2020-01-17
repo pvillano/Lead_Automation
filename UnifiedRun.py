@@ -3,12 +3,59 @@ import XRFControl
 import cv2
 from time import sleep, time
 import argparse
+from PyQt5.QtCore import QObject, pyqtSignal
 
 DEBUG = False
-TRAYS = 1
-FILTERS = 0
+TRAYS = 0
+FILTERS = 1
 
-def mainLoop(mode, samples, home = False):
+class unifiedRun(QObject):
+  trayDoneTime = pyqtSignal(int)
+  batchDone = pyqtSignal()
+  
+  def __init__(self):
+    super(unifiedRun, self).__init__()
+    self.robot = RobotControl.robotControl()
+    self.xrf = XRFControl.XRF()
+
+  def close(self):
+    self.robot.sendTo(0, 0)
+    self.robot.close()
+
+  def home(self):
+    self.robot.home()
+
+  def runDummy(self, opt=None):
+    sleep(5)
+    self.batchDone.emit()
+
+  def runBatch(self, mode, samples, name):
+    start_time = time()
+    i = 0
+    (xrfXOffset, xrfYOffset, traySize) = getSettings(mode = mode)
+    self.robot.setMode(mode)
+    self.robot.setToStart()
+    while i < samples:
+      if (i != 0) and (((i) % traySize) == 0):
+        robot.sendTo(0, 0)
+        cTime = time()
+        elapsed = cTime - start_time
+        start_time = cTime
+        self.trayDoneTime.emit(elapsed)
+        #ELEPHANT- add user input
+      label, position = self.robot.capture()
+      targetLabel = correctLabels(label, i, traySize, name)
+      targetPosition = correctPositions(position, xrfXOffset, xrfYOffset)
+      if (targetPosition is not None) and (not self.xrf.error):
+        self.robot.sendTo(targetPosition[0][0], targetPosition[0][1])
+        while self.robot.checkMoving():
+          sleep(1)
+        success = self.xrf.sample(targetLabel)
+      i += 1
+    self.robot.sendTo(0, 0)
+    self.batchDone.emit()
+  
+def mainLoop(mode, samples, home = False, name="Tray"):
   start_time = time()
   (xrfXOffset, xrfYOffset, traySize) = getSettings(mode = mode)
   robot = RobotControl.robotControl(mode = mode)
@@ -25,7 +72,7 @@ def mainLoop(mode, samples, home = False):
       print("Time: %s seconds, %s minutes" % ((elapsed), (elapsed/60.0)))
       #input("Tray done! Reload tray and press enter ")
     label, position = robot.capture()
-    targetLabel = correctLabels(label, i, traySize)
+    targetLabel = correctLabels(label, i, traySize, name)
     targetPosition = correctPositions(position, xrfXOffset, xrfYOffset)
     if (targetPosition is not None):# and (not mXRF.error):
       if DEBUG:
@@ -59,11 +106,10 @@ def askToHome():
     yes = input("Enter exactly y or n: ")
   return yes == 'y'
 
-def correctLabels(labels, i, traySize):
+def correctLabels(labels, i, traySize, name = "Tray"):
   '''ELEPHANT- Label song and dance goes here'''
-  ret = "Tray "
-  ret += str(int((int(i)/int(traySize))+int(1)))
-  ret += " Filter "
+  ret = name
+  ret += ".Item."
   ret += str((i % traySize)+1)
   return ret
 

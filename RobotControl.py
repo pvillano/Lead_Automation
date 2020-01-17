@@ -13,6 +13,9 @@ class robotControl():
   def __init__(self, mode = TRAYS):
     self.gant = Gantry()
     self.cap = cv2.VideoCapture(1)
+    self.setMode(mode)
+
+  def setMode(self, mode = TRAYS):
     self.mode = mode
     if TRAYS == mode:
       self.maxTraySize = 8
@@ -27,7 +30,6 @@ class robotControl():
       self.xStart = 75
       self.yStart = 145
       print("ERROR: Unknown mode")
-    self.setToStart()
 
   def home(self):
     self.gant.home()

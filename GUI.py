@@ -8,8 +8,11 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import UnifiedRun
+import RobotControl
+import _thread
+from time import sleep
 
-MODES = {"Filters": 0, "Test Kits": 1, "Soil Samples": 2}
+MODES = {"Filters": 1, "Test Kits": 0, "Soil Samples": 2}
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -76,6 +79,7 @@ class Ui_MainWindow(object):
         self.lineEdit.textEdited['QString'].connect(self.sampleNameChanged)
         self.pushButton_2.clicked.connect(self.reset)
         self.pushButton.clicked.connect(self.start)
+        self.run = None
         self.reset()
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -110,13 +114,38 @@ class Ui_MainWindow(object):
         self.lineEdit.setText("Filters1")
         self.spinBox.setValue(1)
 
+    def displayPosition(self, x, y):
+        print(x+" "+y)
+
     def start(self):
         print(self.type)
         print(self.number)
         print(self.name)
-        UnifiedRun.mainLoop(self.type, self.number, True) 
+        self.pushButton.setText("Running...")
         self.pushButton.setEnabled(False)
         self.pushButton_2.setEnabled(False)
+        self.centralwidget.repaint()
+        if self.run is None:
+            self.run = UnifiedRun.unifiedRun()
+            self.run.robot.gant.positionChanged.connect(self.displayPosition)
+            self.run.batchDone.connect(self.reEnable)
+        try:
+            _thread.start_new_thread(self.run.runBatch, (self.type, self.number, self.name))
+        except Exception as e:
+            print(e)
+        #self.run.runBatch(self.type, self.number, self.name)
+
+    def reEnable(self):
+        print("Re-enabling buttons")
+        self.pushButton.setText("Start")
+        self.pushButton.setEnabled(True)
+        self.pushButton_2.setEnabled(True)
+        self.centralwidget.repaint()
+
+    def closeEvent(self, event):
+        if self.run is not None:
+            self.run.close()
+        event.accept()
 
 
 if __name__ == "__main__":

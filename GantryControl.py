@@ -1,9 +1,13 @@
-import serial
+import serial, json
+from PyQt5.QtCore import QObject, pyqtSignal
 
 PORT = 'COM8'
 
-class Gantry():
+class Gantry(QObject):
+    positionChanged = pyqtSignal(str, str)
+    
     def __init__(self):
+        super(Gantry, self).__init__()
         self.ser = serial.Serial(PORT)
         self.ser.baudrate = 115200
         #getLine(self.ser) #Clear 1st line on serial
@@ -17,6 +21,7 @@ class Gantry():
         getLine(self.ser)
         while (self.checkMoving()):
             pass
+        self.positionChanged.emit(x,y)
         return
 
     def home(self):
@@ -59,6 +64,20 @@ class Gantry():
             self.moving = (ret[-4:-1]=='Run')
         return self.moving
 
+    def getPos(self):
+        getX = "{\"posx\":n}\n"
+        sendLine(self.ser, getX.encode('utf-8'))
+        xPos = getLine(self.ser)
+        xPos = json.loads(xPos)
+        xPos = xPos["r"]["posx"]
+        print()
+        getY = "{\"posy\":n}\n"
+        sendLine(self.ser, getY.encode('utf-8'))
+        yPos = getLine(self.ser)
+        yPos = json.loads(yPos)
+        yPos = yPos["r"]["posy"]
+        return(xPos, yPos)
+
     def close(self):
         self.ser.close()
 
@@ -83,6 +102,7 @@ def sortData(pos, x, y):
 
 if __name__ == '__main__':
     gant = Gantry()
+    #gant.getPos()
     gant.sendTo(str(50),str(100))
     gant.sendTo(str(0),str(0))
     
