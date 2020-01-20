@@ -17,8 +17,10 @@ MODES = {"Filters": 1, "Test Kits": 0, "Soil Samples": 2}
 class GantryDisplay(QtWidgets.QFrame):
     def __init__(self, parent):
         super(GantryDisplay, self).__init__(parent)
-        self.x = 0
-        self.y = 0
+        self.x = 390
+        self.y = 174
+        self.trueX = 0
+        self.trueY = 0
 
     def paintEvent(self, event):
         p = QtGui.QPainter(self)
@@ -38,12 +40,13 @@ class GantryDisplay(QtWidgets.QFrame):
         pen.setWidth(4)
         p.setPen(pen)
         p.drawPoint(QtCore.QPoint(self.x, self.y))
-        print(r.bottom())
-        print(r)
 
     def updatePos(self, x, y):
-        self.x = x
-        self.y = y
+        self.x = 390-int(y)/2
+        self.y = 174-int(x)*2
+        self.trueX = x
+        self.trueY = y
+        print("x=%d,y=%d" %(self.trueX, self.trueY))
         self.update()
 
 class Ui_MainWindow(object):
@@ -97,7 +100,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.pushButton_2)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
         self.frame = GantryDisplay(self.centralwidget)
-        self.frame.setGeometry(QtCore.QRect(270, 20, 321, 161))
+        self.frame.setGeometry(QtCore.QRect(270, 20, 391, 175))
         self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame.setObjectName("frame")
@@ -152,7 +155,8 @@ class Ui_MainWindow(object):
         self.spinBox.setValue(1)
 
     def displayPosition(self, x, y):
-        self.frame.updatePos(x, y)
+        self.frame.updatePos(float(x), float(y))
+        self.centralwidget.repaint()
 
     def start(self):
         print(self.type)
@@ -170,7 +174,6 @@ class Ui_MainWindow(object):
             _thread.start_new_thread(self.run.runBatch, (self.type, self.number, self.name))
         except Exception as e:
             print(e)
-        #self.run.runBatch(self.type, self.number, self.name)
 
     def reEnable(self):
         print("Re-enabling buttons")

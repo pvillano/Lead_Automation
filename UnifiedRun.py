@@ -51,6 +51,7 @@ class unifiedRun(QObject):
         while self.robot.checkMoving():
           sleep(1)
         success = self.xrf.sample(targetLabel)
+        print(success)
       i += 1
     self.robot.sendTo(0, 0)
     self.batchDone.emit()
