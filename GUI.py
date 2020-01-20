@@ -14,6 +14,38 @@ from time import sleep
 
 MODES = {"Filters": 1, "Test Kits": 0, "Soil Samples": 2}
 
+class GantryDisplay(QtWidgets.QFrame):
+    def __init__(self, parent):
+        super(GantryDisplay, self).__init__(parent)
+        self.x = 0
+        self.y = 0
+
+    def paintEvent(self, event):
+        p = QtGui.QPainter(self)
+        r = event.rect()
+        p.fillRect(r, QtGui.QBrush(QtCore.Qt.lightGray))
+        pen = QtGui.QPen(QtCore.Qt.black)
+        pen.setWidth(3)
+        p.setPen(pen)
+        center = QtCore.QRect(self.x-3,self.y-3, self.x+3, self.y+3)
+        p.drawLine(QtCore.QPoint(self.x, r.top()), QtCore.QPoint(self.x, r.bottom()))
+        p.drawLine(QtCore.QPoint(r.left(), self.y), QtCore.QPoint(r.right(), self.y))
+        pen = QtGui.QPen(QtCore.Qt.black)
+        pen.setWidth(5)
+        p.setPen(pen)
+        p.drawPoint(QtCore.QPoint(self.x, self.y))
+        pen = QtGui.QPen(QtCore.Qt.yellow)
+        pen.setWidth(4)
+        p.setPen(pen)
+        p.drawPoint(QtCore.QPoint(self.x, self.y))
+        print(r.bottom())
+        print(r)
+
+    def updatePos(self, x, y):
+        self.x = x
+        self.y = y
+        self.update()
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -64,6 +96,11 @@ class Ui_MainWindow(object):
         self.pushButton_2.setObjectName("pushButton_2")
         self.horizontalLayout.addWidget(self.pushButton_2)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
+        self.frame = GantryDisplay(self.centralwidget)
+        self.frame.setGeometry(QtCore.QRect(270, 20, 321, 161))
+        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame.setObjectName("frame")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 706, 22))
@@ -115,7 +152,7 @@ class Ui_MainWindow(object):
         self.spinBox.setValue(1)
 
     def displayPosition(self, x, y):
-        print(x+" "+y)
+        self.frame.updatePos(x, y)
 
     def start(self):
         print(self.type)
