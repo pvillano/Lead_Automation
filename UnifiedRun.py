@@ -5,7 +5,7 @@ from time import sleep, time
 import argparse
 from PyQt5.QtCore import QObject, pyqtSignal
 
-DEBUG = False
+DEBUG = True
 TRAYS = 0
 FILTERS = 1
 
@@ -47,6 +47,10 @@ class unifiedRun(QObject):
       targetLabel = correctLabels(label, i, traySize, name)
       targetPosition = correctPositions(position, xrfXOffset, xrfYOffset)
       if (targetPosition is not None) and (not self.xrf.error):
+        if DEBUG:
+          print(position)
+          print(targetPosition)
+          print(targetLabel)
         self.robot.sendTo(targetPosition[0][0], targetPosition[0][1])
         while self.robot.checkMoving():
           sleep(1)
@@ -75,7 +79,7 @@ def mainLoop(mode, samples, home = False, name="Tray"):
     label, position = robot.capture()
     targetLabel = correctLabels(label, i, traySize, name)
     targetPosition = correctPositions(position, xrfXOffset, xrfYOffset)
-    if (targetPosition is not None):# and (not mXRF.error):
+    if (targetPosition is not None) and (not mXRF.error):
       if DEBUG:
         print(position)
         print(targetPosition)
