@@ -7,8 +7,8 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-import UnifiedRun
-import RobotControl
+#import UnifiedRun
+#import RobotControl
 import _thread
 from time import sleep
 
@@ -17,10 +17,10 @@ MODES = {"Filters": 1, "Test Kits": 0, "Soil Samples": 2}
 class GantryDisplay(QtWidgets.QFrame):
     def __init__(self, parent):
         super(GantryDisplay, self).__init__(parent)
-        self.x = 390
-        self.y = 174
-        self.trueX = 0
-        self.trueY = 0
+        self.setGeometry(QtCore.QRect(270, 20, 391, 175))
+        self.r = self.frameRect()
+        print(self.r)
+        self.updatePos(0, 0)
 
     def paintEvent(self, event):
         p = QtGui.QPainter(self)
@@ -30,7 +30,8 @@ class GantryDisplay(QtWidgets.QFrame):
         pen.setWidth(3)
         p.setPen(pen)
         center = QtCore.QRect(self.x-3,self.y-3, self.x+3, self.y+3)
-        p.drawLine(QtCore.QPoint(self.x, r.top()), QtCore.QPoint(self.x, r.bottom()))
+        p.drawLine(self.horizontalLine)
+        #p.drawLine(QtCore.QPoint(self.x, r.top()), QtCore.QPoint(self.x, r.bottom()))
         p.drawLine(QtCore.QPoint(r.left(), self.y), QtCore.QPoint(r.right(), self.y))
         pen = QtGui.QPen(QtCore.Qt.black)
         pen.setWidth(5)
@@ -47,6 +48,7 @@ class GantryDisplay(QtWidgets.QFrame):
         self.trueX = x
         self.trueY = y
         print("x=%d,y=%d" %(self.trueX, self.trueY))
+        self.horizontalLine = QtCore.QLine(QtCore.QPoint(self.x, self.r.top()), QtCore.QPoint(self.x, self.r.bottom()))
         self.update()
 
 class Ui_MainWindow(object):
@@ -100,7 +102,6 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.pushButton_2)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
         self.frame = GantryDisplay(self.centralwidget)
-        self.frame.setGeometry(QtCore.QRect(270, 20, 391, 175))
         self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame.setObjectName("frame")
@@ -166,6 +167,12 @@ class Ui_MainWindow(object):
         self.pushButton.setEnabled(False)
         self.pushButton_2.setEnabled(False)
         self.centralwidget.repaint()
+        sleep(2)
+        self.displayPosition(10,10)
+        sleep(2)
+        self.displayPosition(50,50)
+        self.reEnable()
+        '''
         if self.run is None:
             self.run = UnifiedRun.unifiedRun()
             self.run.robot.gant.positionChanged.connect(self.displayPosition)
@@ -173,7 +180,7 @@ class Ui_MainWindow(object):
         try:
             _thread.start_new_thread(self.run.runBatch, (self.type, self.number, self.name))
         except Exception as e:
-            print(e)
+            print(e)'''
 
     def reEnable(self):
         print("Re-enabling buttons")
