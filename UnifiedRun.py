@@ -35,6 +35,9 @@ class unifiedRun(QObject):
     (xrfXOffset, xrfYOffset, traySize) = getSettings(mode = mode)
     self.robot.setMode(mode)
     self.robot.setToStart()
+    while self.robot.checkMoving():
+        print("sleeping")
+        sleep(1)
     while i < samples:
       if (i != 0) and (((i) % traySize) == 0):
         robot.sendTo(0, 0)
@@ -43,6 +46,9 @@ class unifiedRun(QObject):
         start_time = cTime
         self.trayDoneTime.emit(elapsed)
         #ELEPHANT- add user input
+        while self.robot.checkMoving():
+          print("sleeping")
+          sleep(1)
       label, position = self.robot.capture()
       targetLabel = correctLabels(label, i, traySize, name)
       targetPosition = correctPositions(position, xrfXOffset, xrfYOffset)
@@ -53,6 +59,7 @@ class unifiedRun(QObject):
           print(targetLabel)
         self.robot.sendTo(targetPosition[0][0], targetPosition[0][1])
         while self.robot.checkMoving():
+          print("sleeping")
           sleep(1)
         success = self.xrf.sample(targetLabel)
         print(success)
@@ -133,7 +140,7 @@ def getSettings(mode):
   if TRAYS == mode:
     return (27, 30, 8)
   elif FILTERS == mode:
-    return (-24.23, -35.19, 14)
+    return (-9.9, -41.62, 30)
   else:
     print("ERROR: Unknown mode")
     return (0, 0, 0)

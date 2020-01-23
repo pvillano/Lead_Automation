@@ -22,6 +22,7 @@ class Gantry(QObject):
         while (self.checkMoving()):
             pass
         self.positionChanged.emit(x,y)
+        #print("Finished move")
         return
 
     def home(self):

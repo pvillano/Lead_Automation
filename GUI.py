@@ -7,8 +7,8 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-#import UnifiedRun
-#import RobotControl
+import UnifiedRun
+import RobotControl
 import _thread
 from time import sleep
 
@@ -104,7 +104,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.pushButton_2)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
         self.horizontalLayout_2.addLayout(self.verticalLayout_2)
-        self.gridLayout_2 = QtWidgets.QGridLayout()
+        '''self.gridLayout_2 = QtWidgets.QGridLayout()
         self.gridLayout_2.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.radioButton_8 = QtWidgets.QRadioButton(self.horizontalLayoutWidget_2)
@@ -197,7 +197,7 @@ class Ui_MainWindow(object):
         self.radioButton_30 = QtWidgets.QRadioButton(self.horizontalLayoutWidget_2)
         self.radioButton_30.setObjectName("radioButton_30")
         self.gridLayout_2.addWidget(self.radioButton_30, 0, 1, 1, 1)
-        self.horizontalLayout_2.addLayout(self.gridLayout_2)
+        self.horizontalLayout_2.addLayout(self.gridLayout_2)'''
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 706, 22))
@@ -261,15 +261,14 @@ class Ui_MainWindow(object):
         self.pushButton.setEnabled(False)
         self.pushButton_2.setEnabled(False)
         self.centralwidget.repaint()
-        '''
         if self.run is None:
             self.run = UnifiedRun.unifiedRun()
-            self.run.robot.gant.positionChanged.connect(self.displayPosition)
+            #self.run.robot.gant.positionChanged.connect(self.displayPosition)
             self.run.batchDone.connect(self.reEnable)
         try:
             _thread.start_new_thread(self.run.runBatch, (self.type, self.number, self.name))
         except Exception as e:
-            print(e)'''
+            print(e)
 
     def reEnable(self):
         print("Re-enabling buttons")

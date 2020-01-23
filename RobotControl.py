@@ -22,9 +22,9 @@ class robotControl():
       self.xStart = 75
       self.yStart = 145
     elif FILTERS == mode:
-      self.maxTraySize = 14
-      self.xStart = 85
-      self.yStart = 333
+      self.maxTraySize = 30
+      self.xStart = 20
+      self.yStart = 320
     else:
       self.maxTraySize = 8
       self.xStart = 75
@@ -36,6 +36,7 @@ class robotControl():
     
   def capture(self):
     self.samples += 1
+    print(self.x, self.y)
     l, p = readLabels(1, self.x, self.y, self.gant, self.cap)
     self.advance()
     if self.samples >= self.maxTraySize:
@@ -49,13 +50,13 @@ class robotControl():
       self.advanceFilters()
 
   def advanceFilters(self):
-    columnPosition = self.samples % 2
+    columnPosition = self.samples % 3
     if columnPosition < 1:
       #Move to next column
       self.x = self.xStart
-      self.y += 45
+      self.y += 36.25
     else:
-      self.x -= 50
+      self.x += 31
 
   def sendTo(self, x, y):
     self.gant.sendTo(str(x), str(y))
@@ -89,9 +90,10 @@ def tryToFindTape(number, x, y, cap):
   i = 0
   while i < number:
     ret, frame = cap.read()
+    ret, frame = cap.read()
     processed, center = mk2Camera.processColor(frame)
     #cv2.imshow('processView',processed)
-    #cv2.waitKey(1)
+    #cv2.waitKey()
     if center is not None:
       break
     i+=1
@@ -139,14 +141,21 @@ def singlePass(number, gant):
 
 
 if __name__ == '__main__':
+  r = robotControl(mode=FILTERS)
+  r.setToStart()
+  for i in range(3):
+    l, p = r.capture()
+    print(p)
+  r.close()
+  '''
   gant = Gantry()
   labels, positions = singlePass(1, gant)
   print(labels)
   print(positions)
   gant.sendTo(str(0),str(0))
   gant.close()
-  
-'''
+
+  #***
   while(True):
     ret, frame = cap.read()
     processed = mk2Camera.processFrame(frame)
