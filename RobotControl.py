@@ -36,7 +36,7 @@ class robotControl():
     
   def capture(self):
     self.samples += 1
-    print(self.x, self.y)
+    #print(self.x, self.y)
     l, p = readLabels(1, self.x, self.y, self.gant, self.cap)
     self.advance()
     if self.samples >= self.maxTraySize:
@@ -89,8 +89,8 @@ def tryToFindLabel(cap, t):
 def tryToFindTape(number, x, y, cap):
   i = 0
   while i < number:
-    ret, frame = cap.read()
-    ret, frame = cap.read()
+    for j in range(1):
+      ret, frame = cap.read()
     processed, center = mk2Camera.processColor(frame)
     #cv2.imshow('processView',processed)
     #cv2.waitKey()
@@ -143,7 +143,7 @@ def singlePass(number, gant):
 if __name__ == '__main__':
   r = robotControl(mode=FILTERS)
   r.setToStart()
-  for i in range(3):
+  for i in range(4):
     l, p = r.capture()
     print(p)
   r.close()
