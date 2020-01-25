@@ -173,6 +173,22 @@ class Ui_MainWindow(object):
         self.widget.setGeometry(QtCore.QRect(330, 20, 311, 101))
         self.widget.setObjectName("widget")
         self.widget.enablePositions(1)
+        self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 230, 281, 161))
+        self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.label_4 = QtWidgets.QLabel(self.verticalLayoutWidget)
+        self.label_4.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_4.setObjectName("label_4")
+        self.verticalLayout.addWidget(self.label_4)
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.pushButton_4 = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        self.pushButton_4.setObjectName("pushButton_4")
+        self.horizontalLayout_2.addWidget(self.pushButton_4)
+        self.verticalLayout.addLayout(self.horizontalLayout_2)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 706, 22))
@@ -189,6 +205,7 @@ class Ui_MainWindow(object):
         self.lineEdit.textEdited['QString'].connect(self.sampleNameChanged)
         self.pushButton_2.clicked.connect(self.reset)
         self.pushButton.clicked.connect(self.start)
+        self.pushButton_4.clicked.connect(self.sendHome)
         self.run = None
         self.reset()
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -206,6 +223,8 @@ class Ui_MainWindow(object):
         self.lineEdit.setText(_translate("MainWindow", "Filters1"))
         self.pushButton.setText(_translate("MainWindow", "Start"))
         self.pushButton_2.setText(_translate("MainWindow", "Reset"))
+        self.label_4.setText(_translate("MainWindow", "Gantry Control"))
+        self.pushButton_4.setText(_translate("MainWindow", "Home"))
 
     def sampleNumberChanged(self, i):
         self.number = i
@@ -226,16 +245,27 @@ class Ui_MainWindow(object):
         self.spinBox.setValue(1)
 
     def displayPosition(self, x, y):
-        self.frame.updatePos(float(x), float(y))
+        self.frame.updatePos(float(x), float(ys))
         self.centralwidget.repaint()
+
+    def sendHome(self):
+        self.lockButtons()
+        self.centralwidget.update()
+        if self.run is None:
+            tempRobot = RobotControl.robotControl()
+            tempRobot.home()
+            tempRobot.close()
+        else:
+            self.run.robot.home()
+        self.unLockButtons()
+        self.centralwidget.update()
 
     def start(self):
         print(self.type)
         print(self.number)
         print(self.name)
         self.pushButton.setText("Running...")
-        self.pushButton.setEnabled(False)
-        self.pushButton_2.setEnabled(False)
+        self.lockButtons()
         self.widget.lockPositions()
         self.centralwidget.update()
         '''
@@ -254,6 +284,16 @@ class Ui_MainWindow(object):
         except Exception as e:
             print(e)
 
+    def lockButtons(self):
+        self.pushButton.setEnabled(False)
+        self.pushButton_2.setEnabled(False)
+        self.pushButton_4.setEnabled(False)
+
+    def unLockButtons(self):
+        self.pushButton.setEnabled(True)
+        self.pushButton_2.setEnabled(True)
+        self.pushButton_4.setEnabled(True)
+
     def dummyRun(self, number):
         valid = True
         for n in range(number):
@@ -267,8 +307,7 @@ class Ui_MainWindow(object):
     def reEnable(self):
         print("Re-enabling buttons")
         self.pushButton.setText("Start")
-        self.pushButton.setEnabled(True)
-        self.pushButton_2.setEnabled(True)
+        self.unLockButtons()
         self.widget.unlockPositions()
         self.widget.reset(self.number)
         self.centralwidget.update()
