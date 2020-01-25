@@ -19,34 +19,67 @@ class TrayDisplay(QtWidgets.QWidget):
         super(TrayDisplay, self).__init__(parent)
         self.samples = {}
         self.populateSamples()
+        self.unlockPositions()
 
     def paintEvent(self, event):
         p = QtGui.QPainter(self)
         r = event.rect()
-        print(r)
         p.fillRect(r, QtGui.QBrush(QtCore.Qt.lightGray))
-        p.setPen(QtGui.QPen(QtCore.Qt.green, 2))
         p.setBrush(QtGui.QBrush(QtCore.Qt.darkGray, QtCore.Qt.SolidPattern))
         f = p.font()
         f.setBold(True)
         p.setFont(f)
         for sample in self.samples:
-            if not self.samples[sample]['tested']:
-                cX = self.samples[sample]['x']
-                cY = self.samples[sample]['y']
-                p.drawEllipse(cY, cX, 20, 20)
-                p.drawText(cY, cX, 20, 20, QtCore.Qt.AlignCenter, str(sample))
+            cX = self.samples[sample]['x']
+            cY = self.samples[sample]['y']
+            if not self.samples[sample]['selected']:
+                p.setPen(QtGui.QPen(QtCore.Qt.lightGray, 2))
+            else:
+                if self.samples[sample]['tested']:
+                    if self.samples[sample]['valid']:
+                        p.setPen(QtGui.QPen(QtCore.Qt.green, 2))
+                    else:
+                        p.setPen(QtGui.QPen(QtCore.Qt.red, 2))
+                else:
+                    p.setPen(QtGui.QPen(QtCore.Qt.black, 2))
+            p.drawEllipse(cY, cX, 20, 20)
+            p.drawText(cY, cX, 20, 20, QtCore.Qt.AlignCenter, str(sample))
+
 
     def populateSamples(self):
         xPos = 10
         yPos = 10
         for i in range(1,31):
-            self.samples[i] = {'tested':False, 'x':xPos, 'y':yPos}
+            self.samples[i] = {'selected':False, 'tested':False, 'valid':True, 'x':xPos, 'y':yPos}
             xPos += 30
             if xPos > 70:
                 xPos = 10
                 yPos += 30
         self.update()
+
+    def lockPositions(self):
+        self.locked = True
+
+    def unlockPositions(self):
+        self.locked = False
+
+    def enablePositions(self, number):
+        if not self.locked:
+            for sample in self.samples:
+                if sample <= number:
+                    self.samples[sample]['selected'] = True
+                else:
+                    self.samples[sample]['selected'] = False
+            self.update()
+
+    def testResults(self, sample, passed):
+        self.samples[sample]['tested'] = True
+        self.samples[sample]['valid'] = passed
+        self.update()
+
+    def reset(self, number):
+        self.populateSamples()
+        self.enablePositions(number)
 
 
 class GantryDisplay(QtWidgets.QFrame):
@@ -139,6 +172,7 @@ class Ui_MainWindow(object):
         self.widget = TrayDisplay(self.centralwidget)
         self.widget.setGeometry(QtCore.QRect(330, 20, 311, 101))
         self.widget.setObjectName("widget")
+        self.widget.enablePositions(1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 706, 22))
@@ -175,6 +209,7 @@ class Ui_MainWindow(object):
 
     def sampleNumberChanged(self, i):
         self.number = i
+        self.widget.enablePositions(self.number)
 
     def sampleNameChanged(self, s):
         self.name = s
@@ -201,7 +236,13 @@ class Ui_MainWindow(object):
         self.pushButton.setText("Running...")
         self.pushButton.setEnabled(False)
         self.pushButton_2.setEnabled(False)
-        self.centralwidget.repaint()
+        self.widget.lockPositions()
+        self.centralwidget.update()
+        try:
+            _thread.start_new_thread(self.dummyRun, (3,))
+        except Exception as e:
+            print(e)
+        #self.reEnable()
         '''
         if self.run is None:
             self.run = UnifiedRun.unifiedRun()
@@ -212,12 +253,24 @@ class Ui_MainWindow(object):
         except Exception as e:
             print(e)'''
 
+    def dummyRun(self, number):
+        valid = True
+        for n in range(number):
+            sleep(1)
+            self.widget.testResults(n+1, valid)
+            valid = not valid
+            print(n, valid)
+        sleep(1)
+        self.reEnable()
+
     def reEnable(self):
         print("Re-enabling buttons")
         self.pushButton.setText("Start")
         self.pushButton.setEnabled(True)
         self.pushButton_2.setEnabled(True)
-        self.centralwidget.repaint()
+        self.widget.unlockPositions()
+        self.widget.reset(self.number)
+        self.centralwidget.update()
 
     def closeEvent(self, event):
         if self.run is not None:
