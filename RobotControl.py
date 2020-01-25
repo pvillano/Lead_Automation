@@ -14,6 +14,10 @@ class robotControl():
     self.gant = Gantry()
     self.cap = cv2.VideoCapture(1)
     self.setMode(mode)
+    self.xMin = 0
+    self.xMax = 85
+    self.yMin = 0
+    self.yMax = 780
 
   def setMode(self, mode = TRAYS):
     self.mode = mode
@@ -59,6 +63,16 @@ class robotControl():
       self.x += 31
 
   def sendTo(self, x, y):
+    x = float(x)
+    y = float(y)
+    if x < self.xMin:
+      x = self.xMin
+    elif x > self.xMax:
+      x = self.xMax
+    if y < self.yMin:
+      y = self.yMin
+    elif y > self.yMax:
+      y = self.yMax
     self.gant.sendTo(str(x), str(y))
 
   def checkMoving(self):

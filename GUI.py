@@ -252,11 +252,9 @@ class Ui_MainWindow(object):
         self.lockButtons()
         self.centralwidget.update()
         try:
-            _thread.start_new_thread(self.sendHomeThread, (,))
+            _thread.start_new_thread(self.sendHomeThread, ())
         except Exception as e:
             print(e)
-        self.unLockButtons()
-        self.centralwidget.update()
 
     def sendHomeThread(self):
         if self.run is None:
@@ -265,6 +263,8 @@ class Ui_MainWindow(object):
             tempRobot.close()
         else:
             self.run.robot.home()
+        self.unLockButtons()
+        self.centralwidget.update()
 
     def start(self):
         print(self.type)
@@ -294,6 +294,7 @@ class Ui_MainWindow(object):
         self.pushButton.setEnabled(False)
         self.pushButton_2.setEnabled(False)
         self.pushButton_4.setEnabled(False)
+        self.pushButton.update()
 
     def unLockButtons(self):
         self.pushButton.setEnabled(True)

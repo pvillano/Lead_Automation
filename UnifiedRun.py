@@ -67,8 +67,11 @@ class unifiedRun(QObject):
         success = self.xrf.sample(targetLabel)
         self.sampleStatusOK.emit(i+1, success)
       else:
+        self.xrf.reset()
         self.sampleStatusOK.emit(i+1, False)
       i += 1
+    self.robot.sendTo(0, 280)
+    self.robot.sendTo(0, 250)
     self.robot.sendTo(0, 0)
     self.batchDone.emit()
   
@@ -138,7 +141,7 @@ def correctPositions(positions, xrfXOffset, xrfYOffset):
       p1 = float(position[1]) + xrfYOffset;
       ret.append([str.format("%4.3f"%(p0)), str.format("%4.3f"%(p1))])
     else:
-      ret.append(None)
+      return None
   return ret
 
 def getSettings(mode):

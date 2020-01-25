@@ -105,9 +105,9 @@ def idTape(orange):
       tRect = rect
   if tRect is not None:
     tSize, tCenter = getBoxChars(tRect)
-    #print(tSize)
+    print(tSize, tCenter)
     for i in range(2):
-      if tSize[i] < 50 or tSize[i] > 400:
+      if tSize[i] < 150 or tSize[i] > 250:
         return None
     return tCenter
   return None
