@@ -251,14 +251,20 @@ class Ui_MainWindow(object):
     def sendHome(self):
         self.lockButtons()
         self.centralwidget.update()
+        try:
+            _thread.start_new_thread(self.sendHomeThread, (,))
+        except Exception as e:
+            print(e)
+        self.unLockButtons()
+        self.centralwidget.update()
+
+    def sendHomeThread(self):
         if self.run is None:
             tempRobot = RobotControl.robotControl()
             tempRobot.home()
             tempRobot.close()
         else:
             self.run.robot.home()
-        self.unLockButtons()
-        self.centralwidget.update()
 
     def start(self):
         print(self.type)
