@@ -10,6 +10,7 @@ TRAYS = 0
 FILTERS = 1
 
 class unifiedRun(QObject):
+  sampleStatusOK = pyqtSignal(int, bool)
   trayDoneTime = pyqtSignal(int)
   batchDone = pyqtSignal()
   
@@ -34,6 +35,8 @@ class unifiedRun(QObject):
     i = 0
     (xrfXOffset, xrfYOffset, traySize) = getSettings(mode = mode)
     self.robot.setMode(mode)
+    self.robot.sendTo(0, 250)
+    self.robot.sendTo(0, 280)
     self.robot.setToStart()
     while self.robot.checkMoving():
         print("sleeping")
@@ -62,7 +65,9 @@ class unifiedRun(QObject):
           print("sleeping")
           sleep(1)
         success = self.xrf.sample(targetLabel)
-        print(success)
+        self.sampleStatusOK.emit(i+1, success)
+      else:
+        self.sampleStatusOK.emit(i+1, False)
       i += 1
     self.robot.sendTo(0, 0)
     self.batchDone.emit()

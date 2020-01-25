@@ -7,8 +7,8 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-#import UnifiedRun
-#import RobotControl
+import UnifiedRun
+import RobotControl
 import _thread
 from time import sleep
 
@@ -238,20 +238,21 @@ class Ui_MainWindow(object):
         self.pushButton_2.setEnabled(False)
         self.widget.lockPositions()
         self.centralwidget.update()
+        '''
         try:
             _thread.start_new_thread(self.dummyRun, (3,))
         except Exception as e:
             print(e)
-        #self.reEnable()
         '''
         if self.run is None:
             self.run = UnifiedRun.unifiedRun()
             #self.run.robot.gant.positionChanged.connect(self.displayPosition)
+            self.run.sampleStatusOK.connect(self.widget.testResults)
             self.run.batchDone.connect(self.reEnable)
         try:
             _thread.start_new_thread(self.run.runBatch, (self.type, self.number, self.name))
         except Exception as e:
-            print(e)'''
+            print(e)
 
     def dummyRun(self, number):
         valid = True
