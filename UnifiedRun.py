@@ -148,7 +148,7 @@ def getSettings(mode):
   if TRAYS == mode:
     return (27, 30, 8)
   elif FILTERS == mode:
-    return (-9.9, -41.62, 30)
+    return (-8.9, -43.62, 30)
   else:
     print("ERROR: Unknown mode")
     return (0, 0, 0)
