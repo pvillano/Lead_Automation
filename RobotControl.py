@@ -2,6 +2,7 @@ import cv2
 import mk2Camera
 from time import sleep
 from GantryControl import Gantry
+import ModeSettings
 
 xCenter = 240
 yCenter = 320
@@ -10,7 +11,7 @@ TRAYS = 0
 FILTERS = 1
 
 class robotControl():
-  def __init__(self, mode = TRAYS):
+  def __init__(self, mode = ModeSettings.TrayMode()):
     self.gant = Gantry()
     self.cap = cv2.VideoCapture(1)
     self.setMode(mode)
@@ -19,21 +20,9 @@ class robotControl():
     self.yMin = 0
     self.yMax = 780
 
-  def setMode(self, mode = TRAYS):
+  def setMode(self, mode = ModeSettings.TrayMode()):
     self.mode = mode
-    if TRAYS == mode:
-      self.maxTraySize = 8
-      self.xStart = 75
-      self.yStart = 145
-    elif FILTERS == mode:
-      self.maxTraySize = 30
-      self.xStart = 20
-      self.yStart = 320
-    else:
-      self.maxTraySize = 8
-      self.xStart = 75
-      self.yStart = 145
-      print("ERROR: Unknown mode")
+    (self.xStart, self.yStart, self.maxTraySize) = self.mode.getTraySettings()
 
   def home(self):
     self.gant.home()
@@ -48,11 +37,8 @@ class robotControl():
     return l, p
 
   def advance(self):
-    if self.mode == TRAYS:
-      self.y += 65.3
-    elif self.mode == FILTERS:
-      self.advanceFilters()
-
+    (self.x, self.y) = self.mode.advance(self.x, self.y)
+    
   def advanceFilters(self):
     columnPosition = self.samples % 3
     if columnPosition < 1:
@@ -106,8 +92,8 @@ def tryToFindTape(number, x, y, cap):
     for j in range(1):
       ret, frame = cap.read()
     processed, center = mk2Camera.processColor(frame)
-    #cv2.imshow('processView',processed)
-    #cv2.waitKey()
+    cv2.imshow('processView',processed)
+    cv2.waitKey()
     if center is not None:
       break
     i+=1

@@ -4,6 +4,7 @@ import cv2
 from time import sleep, time
 import argparse
 from PyQt5.QtCore import QObject, pyqtSignal
+import ModeSettings
 
 DEBUG = True
 TRAYS = 0
@@ -17,7 +18,8 @@ class unifiedRun(QObject):
   def __init__(self):
     super(unifiedRun, self).__init__()
     self.robot = RobotControl.robotControl()
-    self.xrf = XRFControl.XRF()
+    if not DEBUG:
+      self.xrf = XRFControl.XRF()
 
   def close(self):
     self.robot.sendTo(0, 0)
@@ -33,8 +35,10 @@ class unifiedRun(QObject):
   def runBatch(self, mode, samples, name):
     start_time = time()
     i = 0
-    (xrfXOffset, xrfYOffset, traySize) = getSettings(mode = mode)
-    self.robot.setMode(mode)
+    self.mode = ModeSettings.getMode(mode)
+    traySize = self.mode.maxTraySize
+    xrfXOffset, xrfYOffset, xrfZOffset = self.mode.getXRFOffset()
+    self.robot.setMode(self.mode)
     self.robot.sendTo(0, 250)
     self.robot.sendTo(0, 280)
     self.robot.setToStart()
@@ -64,7 +68,10 @@ class unifiedRun(QObject):
         while self.robot.checkMoving():
           print("sleeping")
           sleep(1)
-        success = self.xrf.sample(targetLabel)
+        if not DEBUG:
+          success = self.xrf.sample(targetLabel)
+        else:
+          success = True
         self.sampleStatusOK.emit(i+1, success)
       else:
         self.xrf.reset()

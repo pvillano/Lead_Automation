@@ -14,6 +14,7 @@ yCenter = 320
 pixelsToMM = (100.0/9)
 TRAYS = 0
 FILTERS = 1
+SOIL = 2
 
 class arduinoControl():
   def __init__(self, gantry):
