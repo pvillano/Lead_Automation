@@ -23,6 +23,8 @@ class robotControl():
   def setMode(self, mode = ModeSettings.TrayMode()):
     self.mode = mode
     (self.xStart, self.yStart, self.maxTraySize) = self.mode.getTraySettings()
+    (self.xAdvance, self.yAdvance) = self.mode.getAdvanceOffset()
+    (self.c1, self.c2, self.s1, self.s2) = self.mode.getColorLimits()
 
   def home(self):
     self.gant.home()
@@ -30,7 +32,7 @@ class robotControl():
   def capture(self):
     self.samples += 1
     #print(self.x, self.y)
-    l, p = readLabels(1, self.x, self.y, self.gant, self.cap)
+    l, p = readLabels(1, self.x, self.y, self.gant, self.cap, self.xAdvance, self.yAdvance, self.c1, self.c2, self.s1, self.s2)
     self.advance()
     if self.samples >= self.maxTraySize:
       self.setToStart()
@@ -48,7 +50,10 @@ class robotControl():
     else:
       self.x += 31
 
-  def sendTo(self, x, y):
+  def setHeight(self, z):
+    self.gant.setZ(str(z))
+
+  def sendTo(self, x, y, z=None):
     x = float(x)
     y = float(y)
     if x < self.xMin:
@@ -59,7 +64,7 @@ class robotControl():
       y = self.yMin
     elif y > self.yMax:
       y = self.yMax
-    self.gant.sendTo(str(x), str(y))
+    self.gant.sendTo(str(x), str(y), z)
 
   def checkMoving(self):
     return self.gant.checkMoving()
@@ -81,19 +86,19 @@ def tryToFindLabel(cap, t):
     if "" != label:
       print("Found label")
       i = t
-    cv2.imshow('processView',processed)
-    cv2.waitKey(1)
+    #cv2.imshow('processView',processed)
+    #cv2.waitKey()
     i+=1
   return label
 
-def tryToFindTape(number, x, y, cap):
+def tryToFindTape(number, x, y, cap, color1, color2, s1, s2):
   i = 0
   while i < number:
     for j in range(1):
       ret, frame = cap.read()
-    processed, center = mk2Camera.processColor(frame)
-    cv2.imshow('processView',processed)
-    cv2.waitKey()
+    processed, center = mk2Camera.processColor(frame, color1, color2, s1, s2)
+    #cv2.imshow('processView',processed)
+    #cv2.waitKey()
     if center is not None:
       break
     i+=1
@@ -105,31 +110,31 @@ def tryToFindTape(number, x, y, cap):
     print("Could not find tape")
     return None
 
-def readLabels(number, x, y, gant, cap):
+def readLabels(number, x, y, gant, cap, xOffset, yOffset, color1, color2, s1, s2):
   #Tray Settings
   #yOffset = 65.3
   #xOffset = 25
   #Filter Settings
-  yOffset = 40
-  xOffset = 0
+  #yOffset = 40
+  #xOffset = 0
   labels = []
   positions = []
   repeat = True
   for n in range(number):
     yTarget = y+(n*yOffset)
-    gant.sendTo(str.format("%4.3f"%(x)), str.format("%4.3f"%(yTarget)))
-    labels.append(tryToFindLabel(cap, 0))
-    cX = x-(1*xOffset)
+    gant.sendTo(str.format("%4.3f"%(x)), str.format("%4.3f"%(yTarget)), "35.0")
+    labels.append(tryToFindLabel(cap, 5))
+    cX = x+(1*xOffset)
     gant.sendTo(str.format("%4.3f"%(cX)), str.format("%4.3f"%(yTarget)))
-    center = tryToFindTape(20, cX, yTarget, cap)
+    center = tryToFindTape(20, cX, yTarget, cap, color1, color2, s1, s2)
     if center is None and repeat:
-      cX = x-(1*xOffset)
+      cX = x+(2*xOffset)
       gant.sendTo(str.format("%4.3f"%(cX)), str.format("%4.3f"%(yTarget)))
-      center = tryToFindTape(20, cX, yTarget, cap)
+      center = tryToFindTape(20, cX, yTarget, cap, color1, color2, s1, s2)
       if center is None:
-        cX = x-(1*xOffset)
+        cX = x+(3*xOffset)
         gant.sendTo(str.format("%4.3f"%(cX)), str.format("%4.3f"%(yTarget)))
-        center = tryToFindTape(20, cX, yTarget, cap)
+        center = tryToFindTape(20, cX, yTarget, cap, color1, color2, s1, s2)
     positions.append(center)
   return labels, positions
 

@@ -22,11 +22,11 @@ def findColor(img, color1=np.array([0,170,125]), color2=np.array([70,255,255])):
   mask = cv2.inRange(hsvImg, color1, color2)
   return cv2.bitwise_and(img, img, mask=mask)
 
-def processColor(img):
+def processColor(img, color1=np.array([0,0,0]), color2=np.array([255,255,55]), minSize=150, maxSize=250):
   #For finding filters- just leave defaults for orange tape
-  orange = findColor(img, color1=np.array([0,0,0]), color2=np.array([255,255,55]))
+  orange = findColor(img, color1, color2)
   orange = cv2.cvtColor(orange, cv2.COLOR_RGB2GRAY)
-  center = idTape(orange)
+  center = idTape(orange, minSize, maxSize)
   orange = standardize(img, orange)
   out = img.copy()
   if center is not None:
@@ -93,7 +93,7 @@ def getBoxChars(rect):
   yCenter = rect[1] + ySpan/2
   return (int(xSpan)+20, int(ySpan)+20), (int(xCenter), int(yCenter))
 
-def idTape(orange):
+def idTape(orange, minSize, maxSize):
   refContours, heirarchy = cv2.findContours(orange, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
   biggest = 0
   tRect = None
@@ -105,9 +105,9 @@ def idTape(orange):
       tRect = rect
   if tRect is not None:
     tSize, tCenter = getBoxChars(tRect)
-    print(tSize, tCenter)
+    #print(tSize, tCenter)
     for i in range(2):
-      if tSize[i] < 150 or tSize[i] > 250:
+      if tSize[i] < minSize or tSize[i] > maxSize:
         return None
     return tCenter
   return None
@@ -137,7 +137,7 @@ def correctAngle(pImg, rawImg, sub=True):
     cv2.rectangle(process, (x,y), (x+w,y+h), (255,0,0))
     if tAngle < -45:
       tAngle += 90
-    tAngle += 180
+    #tAngle += 180
       #tCenter = (tCenter[1], tCenter[0])
     M = cv2.getRotationMatrix2D(tCenter ,tAngle,1)
     dims = rawImg.shape

@@ -6,7 +6,7 @@ import argparse
 from PyQt5.QtCore import QObject, pyqtSignal
 import ModeSettings
 
-DEBUG = True
+DEBUG = False
 TRAYS = 0
 FILTERS = 1
 
@@ -39,15 +39,13 @@ class unifiedRun(QObject):
     traySize = self.mode.maxTraySize
     xrfXOffset, xrfYOffset, xrfZOffset = self.mode.getXRFOffset()
     self.robot.setMode(self.mode)
-    self.robot.sendTo(0, 250)
-    self.robot.sendTo(0, 280)
     self.robot.setToStart()
     while self.robot.checkMoving():
         print("sleeping")
         sleep(1)
     while i < samples:
       if (i != 0) and (((i) % traySize) == 0):
-        robot.sendTo(0, 0)
+        self.robot.sendTo(0, 0)
         cTime = time()
         elapsed = cTime - start_time
         start_time = cTime
@@ -65,21 +63,23 @@ class unifiedRun(QObject):
           print(targetPosition)
           print(targetLabel)
         self.robot.sendTo(targetPosition[0][0], targetPosition[0][1])
+        self.robot.setHeight(54)
         while self.robot.checkMoving():
           print("sleeping")
           sleep(1)
         if not DEBUG:
           success = self.xrf.sample(targetLabel)
         else:
+          #input("Continue?")
           success = True
         self.sampleStatusOK.emit(i+1, success)
       else:
-        self.xrf.reset()
+        if not DEBUG:
+          self.xrf.reset()
         self.sampleStatusOK.emit(i+1, False)
       i += 1
-    self.robot.sendTo(0, 280)
-    self.robot.sendTo(0, 250)
-    self.robot.sendTo(0, 0)
+      self.robot.setHeight(35)
+    self.robot.sendTo(0, 0, 35)
     self.batchDone.emit()
   
 def mainLoop(mode, samples, home = False, name="Tray"):

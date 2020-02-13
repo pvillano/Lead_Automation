@@ -14,9 +14,22 @@ class Gantry(QObject):
         self.verbose = True
         self.moving = False
 
-    def sendTo(self, x, y):
+    def setZ(self, z):
         self.moving = True
-        command = "g0 x"+str(x)+" y"+str(y)+"\n"
+        command = "g0 z"+str(z)+"\n"
+        sendLine(self.ser, command.encode('utf-8'))
+        getLine(self.ser)
+        while (self.checkMoving()):
+            pass
+        return
+
+    def sendTo(self, x, y, z=None):
+        self.moving = True
+        if z is not None:
+            command = "g0 x"+str(x)+" y"+str(y)+" z"+str(z)+"\n"
+        else:
+            command = "g0 x"+str(x)+" y"+str(y)+"\n"
+        #print(command)
         sendLine(self.ser, command.encode('utf-8'))
         getLine(self.ser)
         while (self.checkMoving()):
@@ -27,7 +40,7 @@ class Gantry(QObject):
 
     def home(self):
         self.moving = True
-        command = "g28.2 x0 y0\n"
+        command = "g28.2 x0 y0 z0\n"
         sendLine(self.ser, command.encode('utf-8'))
         getLine(self.ser)
         while (self.checkMoving()):
