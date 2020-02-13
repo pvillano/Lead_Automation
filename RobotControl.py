@@ -77,7 +77,22 @@ class robotControl():
   def close(self):
     self.cap.release()
 
-def tryToFindLabel(cap, t):
+def tryToFindLabel(gant, cap, t, x, y):
+  i = 0
+  gant.sendTo(str.format("%4.3f"%(x)), str.format("%4.3f"%(y)))
+  while i < t:
+    label = singleLabelTry(cap, 3)
+    if "" != label:
+      i = t
+    else:
+      x += 5
+      gant.sendTo(str.format("%4.3f"%(x)), str.format("%4.3f"%(y)))
+    i+=1
+  if "" == label:
+    print("Missed label")
+  return label
+
+def singleLabelTry(cap, t):
   i = 0
   label = ""
   while i < t:
@@ -123,7 +138,12 @@ def readLabels(number, x, y, gant, cap, xOffset, yOffset, color1, color2, s1, s2
   for n in range(number):
     yTarget = y+(n*yOffset)
     gant.sendTo(str.format("%4.3f"%(x)), str.format("%4.3f"%(yTarget)), "35.0")
-    labels.append(tryToFindLabel(cap, 5))
+    l = tryToFindLabel(gant, cap, 3, x, yTarget)
+    if "" == l:
+      gant.setZ(40)
+      l = tryToFindLabel(gant, cap, 3, x, yTarget)
+    gant.setZ(35)
+    labels.append(l)
     cX = x+(1*xOffset)
     gant.sendTo(str.format("%4.3f"%(cX)), str.format("%4.3f"%(yTarget)))
     center = tryToFindTape(20, cX, yTarget, cap, color1, color2, s1, s2)

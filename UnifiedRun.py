@@ -6,7 +6,7 @@ import argparse
 from PyQt5.QtCore import QObject, pyqtSignal
 import ModeSettings
 
-DEBUG = False
+DEBUG = True
 TRAYS = 0
 FILTERS = 1
 
@@ -57,13 +57,13 @@ class unifiedRun(QObject):
       label, position = self.robot.capture()
       targetLabel = correctLabels(label, i, traySize, name)
       targetPosition = correctPositions(position, xrfXOffset, xrfYOffset)
-      if (targetPosition is not None) and (not self.xrf.error):
+      if (targetPosition is not None):# and (not self.xrf.error):
         if DEBUG:
           print(position)
           print(targetPosition)
           print(targetLabel)
-        self.robot.sendTo(targetPosition[0][0], targetPosition[0][1])
-        self.robot.setHeight(54)
+        #self.robot.sendTo(targetPosition[0][0], targetPosition[0][1])
+        #self.robot.setHeight(54)
         while self.robot.checkMoving():
           print("sleeping")
           sleep(1)
@@ -134,18 +134,19 @@ def askToHome():
   return yes == 'y'
 
 def correctLabels(labels, i, traySize, name = "Tray"):
-  '''ELEPHANT- Label song and dance goes here'''
+  '''ELEPHANT- Label song and dance goes here
   ret = name
   ret += ".Item."
-  ret += str((i % traySize)+1)
-  return ret
+  ret += str((i % traySize)+1)'''
+  return labels[0]
 
 def correctPositions(positions, xrfXOffset, xrfYOffset):
   ret = []
   for position in positions:
     if position is not None:
-      p0 = max(float(position[0]) + xrfXOffset, 0);
-      p1 = float(position[1]) + xrfYOffset;
+      p0 = max(float(position[0]) + xrfXOffset, 0)
+      p0 = min(p0, 57)
+      p1 = float(position[1]) + xrfYOffset
       ret.append([str.format("%4.3f"%(p0)), str.format("%4.3f"%(p1))])
     else:
       return None

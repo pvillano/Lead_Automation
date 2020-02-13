@@ -51,7 +51,7 @@ def showImage(img):
   cv2.waitKey()
 
 def matchLabel(text):
-    match = re.search('([A-Z]|[0-9]){3}\.([A-Z]|[0-9]){4}\.([A-Z]|[0-9]){2}', text)
+    match = re.search('([A-Z]){3}\.([A-Z]|[0-9]){4}\.([A-Z]|[0-9]){4}', text)
     if match:
         return match
     else:
@@ -60,6 +60,10 @@ def matchLabel(text):
       return match
     else:
       match = re.search('([A-Z]){2}\.([A-Z]|[0-9]){3}\.([A-Z]|[0-9]){2}', text)
+    if match:
+      return match
+    else:
+      match = re.search('([A-Z]|[0-9]){3}\.([A-Z]|[0-9]){4}\.([A-Z]|[0-9]){2}', text)
     return match
 
 def matchLabel2(text):
@@ -152,10 +156,12 @@ def correctAngle(pImg, rawImg, sub=True):
   return None
 
 def findSticker(img):
-  squareKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
-  blur = cv2.bilateralFilter(img, 3, 25, 255)
+  squareKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
+  blur = cv2.bilateralFilter(img, 9, 225, 175)
   ret = cv2.adaptiveThreshold(blur[:,:,0], 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 25, 3)
-  ret = cv2.erode(ret, squareKernel, iterations=4)
+  #ret = cv2.dilate(ret, squareKernel, iterations=2)
+  #ret = cv2.erode(ret, squareKernel, iterations=2)
+  #ret = cv2.morphologyEx(ret, cv2.MORPH_CLOSE, squareKernel, iterations=1)
   ret = cv2.Canny(ret, 100,200)
   gaus = cv2.GaussianBlur(blur, (9,9), 10)
   unsharp = cv2.addWeighted(blur, 4, gaus, -3, 0)
