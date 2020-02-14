@@ -155,10 +155,17 @@ class Ui_MainWindow(object):
         self.formLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.spinBox)
         self.label_3 = QtWidgets.QLabel(self.verticalLayoutWidget_2)
         self.label_3.setObjectName("label_3")
-        self.formLayout.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_3)
+        self.formLayout.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_3)
         self.lineEdit = QtWidgets.QLineEdit(self.verticalLayoutWidget_2)
         self.lineEdit.setObjectName("lineEdit")
-        self.formLayout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.lineEdit)
+        self.formLayout.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.lineEdit)
+        self.checkBox = QtWidgets.QCheckBox(self.verticalLayoutWidget_2)
+        self.checkBox.setText("")
+        self.checkBox.setObjectName("checkBox")
+        self.formLayout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.checkBox)
+        self.label_6 = QtWidgets.QLabel(self.verticalLayoutWidget_2)
+        self.label_6.setObjectName("label_6")
+        self.formLayout.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_6)
         self.verticalLayout_2.addLayout(self.formLayout)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -172,7 +179,6 @@ class Ui_MainWindow(object):
         self.widget = TrayDisplay(self.centralwidget)
         self.widget.setGeometry(QtCore.QRect(330, 20, 311, 101))
         self.widget.setObjectName("widget")
-        self.widget.enablePositions(1)
         self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 230, 281, 161))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
@@ -198,7 +204,6 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
 
-
         self.retranslateUi(MainWindow)
         self.spinBox.valueChanged['int'].connect(self.sampleNumberChanged)
         self.comboBox.currentTextChanged['QString'].connect(self.sampleTypeChanged)
@@ -206,7 +211,9 @@ class Ui_MainWindow(object):
         self.pushButton_2.clicked.connect(self.reset)
         self.pushButton.clicked.connect(self.start)
         self.pushButton_4.clicked.connect(self.sendHome)
+        self.checkBox.stateChanged.connect(self.setContMode)
         self.run = None
+        self.continuousMode = False
         self.reset()
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -224,7 +231,21 @@ class Ui_MainWindow(object):
         self.pushButton.setText(_translate("MainWindow", "Start"))
         self.pushButton_2.setText(_translate("MainWindow", "Reset"))
         self.label_4.setText(_translate("MainWindow", "Gantry Control"))
+        self.label_6.setText(_translate("MainWindow", "Continuous Mode"))
         self.pushButton_4.setText(_translate("MainWindow", "Home"))
+
+    def setContMode(self, i):
+        if 2 == i:
+            self.spinBox.setEnabled(False)
+            self.continuousMode = True
+            self.widget.enablePositions(99)
+        elif 0 == i:
+            self.spinBox.setEnabled(True)
+            self.continuousMode = False
+            self.widget.enablePositions(self.number)
+        else:
+            print("Error, invalid i = "+str(i))
+        self.centralwidget.update()
 
     def sampleNumberChanged(self, i):
         self.number = i
@@ -239,6 +260,7 @@ class Ui_MainWindow(object):
     def reset(self):
         self.type = MODES["Filters"]
         self.number = 1
+        self.widget.enablePositions(self.number)
         self.name = "Filters1"
         self.comboBox.setCurrentIndex(0)
         self.lineEdit.setText("Filters1")
@@ -270,11 +292,10 @@ class Ui_MainWindow(object):
         print(self.type)
         print(self.number)
         print(self.name)
-        self.pushButton.setText("Running...")
-        self.lockButtons()
+        self.setRunningButtons()
         self.widget.lockPositions()
-        self.centralwidget.update()
         '''
+        self.centralwidget.update()
         try:
             _thread.start_new_thread(self.dummyRun, (3,))
         except Exception as e:
@@ -289,6 +310,14 @@ class Ui_MainWindow(object):
             _thread.start_new_thread(self.run.runBatch, (self.type, self.number, self.name))
         except Exception as e:
             print(e)
+
+    def setRunningButtons(self):
+        if self.continuousMode:
+            self.pushButton.setText("Next Tray")
+            self.pushButton_2.setText("Stop")
+        else:
+            self.pushButton.setText("Running...")
+        self.lockButtons()
 
     def lockButtons(self):
         self.pushButton.setEnabled(False)
@@ -314,6 +343,7 @@ class Ui_MainWindow(object):
     def reEnable(self):
         print("Re-enabling buttons")
         self.pushButton.setText("Start")
+        self.pushButton_2.setText("Reset")
         self.unLockButtons()
         self.widget.unlockPositions()
         self.widget.reset(self.number)
