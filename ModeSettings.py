@@ -43,7 +43,7 @@ class TrayMode(Mode):
         self.yXRFOffset = -48
         self.xAdvance = 25
         self.yAdvance = 65.3
-        self.tapeMin = 100
+        self.tapeMin = 90
         self.tapeMax = 200
 
     def advance(self, x, y):

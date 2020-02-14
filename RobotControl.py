@@ -99,7 +99,7 @@ def singleLabelTry(cap, t):
     ret, frame = cap.read()
     processed, label = mk2Camera.processFrame(frame)
     if "" != label:
-      print("Found label")
+      print("Found label "+label)
       i = t
     #cv2.imshow('processView',processed)
     #cv2.waitKey()
@@ -122,7 +122,7 @@ def tryToFindTape(number, x, y, cap, color1, color2, s1, s2):
     yTarget = (center[0] - yCenter)/pixelsToMM
     return (str.format("%4.3f"%(x+xTarget)), str.format("%4.3f"%(y+yTarget)))
   else:
-    print("Could not find tape")
+    #print("Could not find tape")
     return None
 
 def readLabels(number, x, y, gant, cap, xOffset, yOffset, color1, color2, s1, s2):
@@ -156,6 +156,9 @@ def readLabels(number, x, y, gant, cap, xOffset, yOffset, color1, color2, s1, s2
         gant.sendTo(str.format("%4.3f"%(cX)), str.format("%4.3f"%(yTarget)))
         center = tryToFindTape(20, cX, yTarget, cap, color1, color2, s1, s2)
     positions.append(center)
+    if center is None:
+      print("Missed tape")
+  #cv2.destroyAllWindows()
   return labels, positions
 
 def singlePass(number, gant):

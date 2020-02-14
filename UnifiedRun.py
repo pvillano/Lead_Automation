@@ -23,9 +23,6 @@ class unifiedRun(QObject):
     if not DEBUG:
       self.xrf = XRFControl.XRF()
 
-  def addSignals(self, parent):
-    self.cont.connect(parent.nextTray)
-
   def cont(self, nextSample):
     if not nextSample:
       self.done = True
@@ -43,6 +40,7 @@ class unifiedRun(QObject):
     self.batchDone.emit()
 
   def runBatch(self, mode, samples, name):
+    print("Starting batch")
     start_time = time()
     i = 0
     self.mode = ModeSettings.getMode(mode)
@@ -53,7 +51,7 @@ class unifiedRun(QObject):
     while self.robot.checkMoving():
         print("sleeping")
         sleep(1)
-    while i < samples:
+    while i < samples or -1 == samples:
       if (i != 0) and (((i) % traySize) == 0):
         self.robot.sendTo(0, 0)
         cTime = time()
@@ -61,12 +59,12 @@ class unifiedRun(QObject):
         start_time = cTime
         self.trayDoneTime.emit(elapsed)
         self.paused = True
-        #ELEPHANT- add user input
         while self.paused or self.robot.checkMoving():
           print("sleeping")
           sleep(1)
           if self.done:
-            self.robot.sendTo(0, 0, 35)
+            self.robot.sendTo(0, 0, 0)
+            self.batchDone.emit()
             return
       label, position = self.robot.capture()
       targetLabel = correctLabels(label, i, traySize, name)
@@ -86,14 +84,14 @@ class unifiedRun(QObject):
         else:
           #input("Continue?")
           success = True
-        self.sampleStatusOK.emit(i+1, success)
+        self.sampleStatusOK.emit(i+1, "" != targetLabel)
       else:
         if not DEBUG:
           self.xrf.reset()
         self.sampleStatusOK.emit(i+1, False)
       i += 1
       self.robot.setHeight(35)
-    self.robot.sendTo(0, 0, 35)
+    self.robot.sendTo(0, 0, 0)
     self.batchDone.emit()
   
 def mainLoop(mode, samples, home = False, name="Tray"):

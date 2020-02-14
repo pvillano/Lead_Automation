@@ -118,8 +118,13 @@ class GantryDisplay(QtWidgets.QFrame):
         print("x=%d,y=%d" %(self.trueX, self.trueY))
         self.update()
 
+class dummySignal(QtCore.QObject):
+    nextTray = QtCore.pyqtSignal(bool)
+
+    def __init__(self):
+        super(dummySignal, self).__init__()
+
 class Ui_MainWindow(object):
-    nexTray = QtCore.pyqtSignal(bool)
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -221,12 +226,14 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
+        self.dSignal = dummySignal()
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.label_5.setText(_translate("MainWindow", "Begin Run"))
         self.label.setText(_translate("MainWindow", "AXLE Mode"))
-        self.comboBox.setItemText(0, _translate("MainWindow", "Filters"))
-        self.comboBox.setItemText(1, _translate("MainWindow", "Test Kits"))
-        self.comboBox.setItemText(2, _translate("MainWindow", "Soil Samples"))
+        self.comboBox.setItemText(0, _translate("MainWindow", "Test Kits"))
+        #self.comboBox.setItemText(0, _translate("MainWindow", "Filters"))
+        #self.comboBox.setItemText(1, _translate("MainWindow", "Test Kits"))
+        #self.comboBox.setItemText(2, _translate("MainWindow", "Soil Samples"))
         self.label_2.setText(_translate("MainWindow", "Samples"))
         self.label_3.setText(_translate("MainWindow", "Run Name"))
         self.lineEdit.setText(_translate("MainWindow", "Filters1"))
@@ -260,11 +267,11 @@ class Ui_MainWindow(object):
         self.type = MODES[s]
 
     def reset(self):
-        self.type = MODES["Filters"]
         self.number = 1
         self.widget.enablePositions(self.number)
         self.name = "Filters1"
         self.comboBox.setCurrentIndex(0)
+        self.type = MODES[self.comboBox.currentText()]
         self.lineEdit.setText("Filters1")
         self.spinBox.setValue(1)
 
@@ -306,21 +313,22 @@ class Ui_MainWindow(object):
         '''
         if self.run is None:
             self.run = UnifiedRun.unifiedRun()
-            self.run.addSignals(self)
+            self.dSignal.nextTray.connect(self.run.cont)
             #self.run.robot.gant.positionChanged.connect(self.displayPosition)
             self.run.sampleStatusOK.connect(self.widget.testResults)
-            self.run.batchDone.connect(self.reEnable)
+            self.run.batchDone.connect(self.fullReEnable)
+            self.run.trayDoneTime.connect(self.reEnable)
         try:
-            _thread.start_new_thread(self.run.runBatch, (self.type, self.number, self.name))
+            if not self.continuousMode:
+                _thread.start_new_thread(self.run.runBatch, (self.type, self.number, self.name))
+            else:
+                _thread.start_new_thread(self.run.runBatch, (self.type, -1, self.name))
         except Exception as e:
             print(e)
 
     def setRunningButtons(self):
-        if self.continuousMode:
-            self.pushButton.setText("Next Tray")
-            self.pushButton_2.setText("End Run")
-        else:
-            self.pushButton.setText("Running...")
+        self.pushButton.setText("Next Tray")
+        self.pushButton_2.setText("End Run")
         self.lockButtons()
 
     def lockButtons(self):
@@ -343,41 +351,41 @@ class Ui_MainWindow(object):
         sleep(1)
         self.reEnable()
 
-    def reEnable(self):
-        print("Re-enabling buttons")
-        if self.continuousMode:
-            self.pushButton.disconnect()
-            self.pushButton.clicked.connect(self.nextTraySend)
-            self.pushButton_2.disconnect()
-            self.pushButton_2.clicked.connect(self.endContRun)
-            self.widget.unlockPositions()
-            self.widget.reset(99)
-            self.widget.lockPositions()
-        else:
-            self.standardReEnable()
+    def reEnable(self, time):
+        print("Re-enabling buttons, tray took "+str(time)+"s")
+        self.pushButton.disconnect()
+        self.pushButton.clicked.connect(self.nextTraySend)
+        self.pushButton_2.disconnect()
+        self.pushButton_2.clicked.connect(self.endContRun)
+        self.widget.unlockPositions()
         self.unLockButtons()
         self.centralwidget.update()
 
-    def standardReEnable(self):
+    def fullReEnable(self):
         self.pushButton.setText("Start")
         self.pushButton_2.setText("Reset")
         self.widget.unlockPositions()
-        self.widget.reset(self.number)
+        if not self.continuousMode:
+            self.widget.reset(self.number)
+        else:
+            self.widget.reset(99)
         self.checkBox.setEnabled(True)
+        self.unLockButtons()
+        self.centralwidget.update()
 
     def endContRun(self):
         self.pushButton.disconnect()
         self.pushButton.clicked.connect(self.start)
         self.pushButton_2.disconnect()
         self.pushButton_2.clicked.connect(self.reset)
-        self.nexTray.emit(False)
-        self.standardReEnable()
+        self.dSignal.nextTray.emit(False)
+        self.fullReEnable()
         self.unLockButtons()
         self.centralwidget.update()
 
     def nextTraySend(self):
         self.lockButtons()
-        self.nexTray.emit(True)
+        self.dSignal.nextTray.emit(True)
 
     def closeEvent(self, event):
         if self.run is not None:

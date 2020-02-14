@@ -52,7 +52,7 @@ def showImage(img):
 
 def matchLabel(text):
     match = re.search('([A-Z]){3}\.([A-Z]|[0-9]){4}\.([A-Z]|[0-9]){4}', text)
-    if match:
+    '''if match:
         return match
     else:
         match = re.search('([A-Z]|[0-9]){4}\.([A-Z]|[0-9]){3}\.([A-Z]|[0-9]){2}', text)
@@ -63,7 +63,7 @@ def matchLabel(text):
     if match:
       return match
     else:
-      match = re.search('([A-Z]|[0-9]){3}\.([A-Z]|[0-9]){4}\.([A-Z]|[0-9]){2}', text)
+      match = re.search('([A-Z]|[0-9]){3}\.([A-Z]|[0-9]){4}\.([A-Z]|[0-9]){2}', text)'''
     return match
 
 def matchLabel2(text):
