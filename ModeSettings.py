@@ -11,9 +11,9 @@ class Mode():
         self.zXRFOffset = 0
         self.xAdvance = 0
         self.yAdvance = 0
-        self.c1 = np.array([0,170,125])
+        self.c1 = np.array([0,170,205])
         self.c2 = np.array([70,255,255])
-        self.tapeMin = 150
+        self.tapeMin = 100
         self.tapeMax = 250
 
     def getColorLimits(self):
@@ -43,8 +43,8 @@ class TrayMode(Mode):
         self.yXRFOffset = -48
         self.xAdvance = 25
         self.yAdvance = 65.3
-        self.tapeMin = 90
-        self.tapeMax = 200
+        self.tapeMin = 110
+        self.tapeMax = 350
 
     def advance(self, x, y):
         y = y + self.yAdvance

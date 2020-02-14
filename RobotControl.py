@@ -144,6 +144,8 @@ def readLabels(number, x, y, gant, cap, xOffset, yOffset, color1, color2, s1, s2
       l = tryToFindLabel(gant, cap, 3, x, yTarget)
     gant.setZ(35)
     labels.append(l)
+    if "" == l:
+      return labels, [None]
     cX = x+(1*xOffset)
     gant.sendTo(str.format("%4.3f"%(cX)), str.format("%4.3f"%(yTarget)))
     center = tryToFindTape(20, cX, yTarget, cap, color1, color2, s1, s2)
