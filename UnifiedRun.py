@@ -17,9 +17,19 @@ class unifiedRun(QObject):
   
   def __init__(self):
     super(unifiedRun, self).__init__()
+    self.paused = False
+    self.done = False
     self.robot = RobotControl.robotControl()
     if not DEBUG:
       self.xrf = XRFControl.XRF()
+
+  def addSignals(self, parent):
+    self.cont.connect(parent.nextTray)
+
+  def cont(self, nextSample):
+    if not nextSample:
+      self.done = True
+    self.paused = False
 
   def close(self):
     self.robot.sendTo(0, 0)
@@ -50,10 +60,14 @@ class unifiedRun(QObject):
         elapsed = cTime - start_time
         start_time = cTime
         self.trayDoneTime.emit(elapsed)
+        self.paused = True
         #ELEPHANT- add user input
-        while self.robot.checkMoving():
+        while self.paused or self.robot.checkMoving():
           print("sleeping")
           sleep(1)
+          if self.done:
+            self.robot.sendTo(0, 0, 35)
+            return
       label, position = self.robot.capture()
       targetLabel = correctLabels(label, i, traySize, name)
       targetPosition = correctPositions(position, xrfXOffset, xrfYOffset)

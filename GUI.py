@@ -119,6 +119,8 @@ class GantryDisplay(QtWidgets.QFrame):
         self.update()
 
 class Ui_MainWindow(object):
+    nexTray = QtCore.pyqtSignal(bool)
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(706, 475)
@@ -293,9 +295,10 @@ class Ui_MainWindow(object):
         print(self.number)
         print(self.name)
         self.setRunningButtons()
+        self.checkBox.setEnabled(False)
         self.widget.lockPositions()
-        '''
         self.centralwidget.update()
+        '''
         try:
             _thread.start_new_thread(self.dummyRun, (3,))
         except Exception as e:
@@ -303,6 +306,7 @@ class Ui_MainWindow(object):
         '''
         if self.run is None:
             self.run = UnifiedRun.unifiedRun()
+            self.run.addSignals(self)
             #self.run.robot.gant.positionChanged.connect(self.displayPosition)
             self.run.sampleStatusOK.connect(self.widget.testResults)
             self.run.batchDone.connect(self.reEnable)
@@ -314,7 +318,7 @@ class Ui_MainWindow(object):
     def setRunningButtons(self):
         if self.continuousMode:
             self.pushButton.setText("Next Tray")
-            self.pushButton_2.setText("Stop")
+            self.pushButton_2.setText("End Run")
         else:
             self.pushButton.setText("Running...")
         self.lockButtons()
@@ -323,7 +327,6 @@ class Ui_MainWindow(object):
         self.pushButton.setEnabled(False)
         self.pushButton_2.setEnabled(False)
         self.pushButton_4.setEnabled(False)
-        self.pushButton.update()
 
     def unLockButtons(self):
         self.pushButton.setEnabled(True)
@@ -342,12 +345,39 @@ class Ui_MainWindow(object):
 
     def reEnable(self):
         print("Re-enabling buttons")
+        if self.continuousMode:
+            self.pushButton.disconnect()
+            self.pushButton.clicked.connect(self.nextTraySend)
+            self.pushButton_2.disconnect()
+            self.pushButton_2.clicked.connect(self.endContRun)
+            self.widget.unlockPositions()
+            self.widget.reset(99)
+            self.widget.lockPositions()
+        else:
+            self.standardReEnable()
+        self.unLockButtons()
+        self.centralwidget.update()
+
+    def standardReEnable(self):
         self.pushButton.setText("Start")
         self.pushButton_2.setText("Reset")
-        self.unLockButtons()
         self.widget.unlockPositions()
         self.widget.reset(self.number)
+        self.checkBox.setEnabled(True)
+
+    def endContRun(self):
+        self.pushButton.disconnect()
+        self.pushButton.clicked.connect(self.start)
+        self.pushButton_2.disconnect()
+        self.pushButton_2.clicked.connect(self.reset)
+        self.nexTray.emit(False)
+        self.standardReEnable()
+        self.unLockButtons()
         self.centralwidget.update()
+
+    def nextTraySend(self):
+        self.lockButtons()
+        self.nexTray.emit(True)
 
     def closeEvent(self, event):
         if self.run is not None:
