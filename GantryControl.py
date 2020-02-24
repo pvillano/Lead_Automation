@@ -10,9 +10,17 @@ class Gantry(QObject):
         super(Gantry, self).__init__()
         self.ser = serial.Serial(PORT)
         self.ser.baudrate = 115200
-        #getLine(self.ser) #Clear 1st line on serial
         self.verbose = True
         self.moving = False
+
+    def lowerTo(self, z):
+        self.moving = True
+        command = "g38.2 z"+str(z)+" f800\n"
+        sendLine(self.ser, command.encode('utf-8'))
+        getLine(self.ser)
+        while (self.checkMoving()):
+            pass
+        return
 
     def setZ(self, z):
         self.moving = True
@@ -71,11 +79,22 @@ class Gantry(QObject):
 
     def checkMoving(self):
         if self.moving:
-            getState = "$stat\n"
+            getState = "{\"stat\":n}\n"
             sendLine(self.ser, getState.encode('utf-8'))
             ret = getLine(self.ser)
-            getLine(self.ser)
-            self.moving = (ret[-4:-1]=='Run')
+            #print(ret)
+            ret = json.loads(ret)
+            if "r" not in ret.keys():
+                self.moving = True
+                return True
+            if ("stat" not in ret["r"].keys()):
+                self.moving = True
+                return True
+            state = ret["r"]["stat"]
+            if state == 5 or state == 7 or state == 9:
+                self.moving = True
+            else:
+                self.moving = False
         return self.moving
 
     def getPos(self):
@@ -84,7 +103,6 @@ class Gantry(QObject):
         xPos = getLine(self.ser)
         xPos = json.loads(xPos)
         xPos = xPos["r"]["posx"]
-        print()
         getY = "{\"posy\":n}\n"
         sendLine(self.ser, getY.encode('utf-8'))
         yPos = getLine(self.ser)

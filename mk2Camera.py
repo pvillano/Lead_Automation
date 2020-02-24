@@ -109,7 +109,7 @@ def idTape(orange, minSize, maxSize):
       tRect = rect
   if tRect is not None:
     tSize, tCenter = getBoxChars(tRect)
-    print(tSize, tCenter)
+    #print(tSize, tCenter)
     for i in range(2):
       if tSize[i] < minSize or tSize[i] > maxSize:
         return None

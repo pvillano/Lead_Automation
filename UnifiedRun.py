@@ -75,7 +75,7 @@ class unifiedRun(QObject):
           print(targetPosition)
           print(targetLabel)
         self.robot.sendTo(targetPosition[0][0], targetPosition[0][1])
-        self.robot.setHeight(54)
+        self.robot.lowerTo(-75)
         while self.robot.checkMoving():
           print("sleeping")
           sleep(1)
@@ -90,7 +90,7 @@ class unifiedRun(QObject):
           self.xrf.reset()
         self.sampleStatusOK.emit(i+1, False)
       i += 1
-      self.robot.setHeight(35)
+      self.robot.setHeight(-35)
     self.robot.sendTo(0, 0, 0)
     self.batchDone.emit()
   
@@ -157,7 +157,7 @@ def correctPositions(positions, xrfXOffset, xrfYOffset):
   for position in positions:
     if position is not None:
       p0 = max(float(position[0]) + xrfXOffset, 0)
-      p0 = min(p0, 57)
+      p0 = min(p0, 45)
       p1 = float(position[1]) + xrfYOffset
       ret.append([str.format("%4.3f"%(p0)), str.format("%4.3f"%(p1))])
     else:

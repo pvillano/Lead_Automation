@@ -50,6 +50,9 @@ class robotControl():
     else:
       self.x += 31
 
+  def lowerTo(self, z):
+    self.gant.lowerTo(str(z))
+
   def setHeight(self, z):
     self.gant.setZ(str(z))
 
@@ -137,13 +140,16 @@ def readLabels(number, x, y, gant, cap, xOffset, yOffset, color1, color2, s1, s2
   repeat = True
   for n in range(number):
     yTarget = y+(n*yOffset)
-    gant.sendTo(str.format("%4.3f"%(x)), str.format("%4.3f"%(yTarget)), "35.0")
+    gant.sendTo(str.format("%4.3f"%(x)), str.format("%4.3f"%(yTarget)), "-35.0")
     l = tryToFindLabel(gant, cap, 3, x, yTarget)
     if "" == l:
-      gant.setZ(40)
+      gant.setZ(-40)
       l = tryToFindLabel(gant, cap, 3, x, yTarget)
-    gant.setZ(35)
+      if "" == l:
+        l = tryToFindLabel(gant, cap, 3, x, yTarget-5)
+    gant.setZ(-35)
     labels.append(l)
+    print(l)
     if "" == l:
       return labels, [None]
     cX = x+(1*xOffset)
