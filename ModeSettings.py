@@ -39,8 +39,8 @@ class TrayMode(Mode):
         self.yStart = 310
         self.maxTraySize = 8
         self.numberTrayRows = 1
-        self.xXRFOffset = -3
-        self.yXRFOffset = -48
+        self.xXRFOffset = 0 #-3
+        self.yXRFOffset = -41 #-48
         self.xAdvance = 25
         self.yAdvance = 65.3
         self.tapeMin = 110
