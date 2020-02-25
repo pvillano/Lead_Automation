@@ -153,7 +153,7 @@ def correctAngle(pImg, rawImg, sub=True):
       return process, rotated
     else:
       return process, rotated, tCenter
-  return None
+  return pImg, rawImg
 
 def findSticker(img):
   squareKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
