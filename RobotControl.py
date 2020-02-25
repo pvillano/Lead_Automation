@@ -140,14 +140,14 @@ def readLabels(number, x, y, gant, cap, xOffset, yOffset, color1, color2, s1, s2
   repeat = True
   for n in range(number):
     yTarget = y+(n*yOffset)
-    gant.sendTo(str.format("%4.3f"%(x)), str.format("%4.3f"%(yTarget)), "-35.0")
+    gant.sendTo(str.format("%4.3f"%(x)), str.format("%4.3f"%(yTarget)), "-30.0")
     l = tryToFindLabel(gant, cap, 3, x, yTarget)
     if "" == l:
       gant.setZ(-40)
       l = tryToFindLabel(gant, cap, 3, x, yTarget)
       if "" == l:
         l = tryToFindLabel(gant, cap, 3, x, yTarget-5)
-    gant.setZ(-35)
+    gant.setZ(-30)
     labels.append(l)
     print(l)
     if "" == l:

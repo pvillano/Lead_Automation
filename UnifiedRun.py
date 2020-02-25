@@ -90,7 +90,7 @@ class unifiedRun(QObject):
           self.xrf.reset()
         self.sampleStatusOK.emit(i+1, False)
       i += 1
-      self.robot.setHeight(-35)
+      self.robot.setHeight(-30)
     self.robot.sendTo(0, 0, 0)
     self.batchDone.emit()
   
