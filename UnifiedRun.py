@@ -75,7 +75,7 @@ class unifiedRun(QObject):
           print(targetPosition)
           print(targetLabel)
         self.robot.sendTo(targetPosition[0][0], targetPosition[0][1])
-        self.robot.lowerTo(-75)
+        self.robot.lowerTo(-58)
         while self.robot.checkMoving():
           print("sleeping")
           sleep(1)
