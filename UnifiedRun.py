@@ -6,7 +6,7 @@ import argparse
 from PyQt5.QtCore import QObject, pyqtSignal
 import ModeSettings
 
-DEBUG = False
+DEBUG = True
 TRAYS = 0
 FILTERS = 1
 
@@ -69,7 +69,7 @@ class unifiedRun(QObject):
       label, position = self.robot.capture()
       targetLabel = correctLabels(label, i, traySize, name)
       targetPosition = correctPositions(position, xrfXOffset, xrfYOffset)
-      if (targetPosition is not None) and (not self.xrf.error):
+      if (targetPosition is not None) and (DEBUG or not self.xrf.error):
         if DEBUG:
           print(position)
           print(targetPosition)
