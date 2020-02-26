@@ -38,9 +38,9 @@ class Mode():
         ret = []
         for position in positions:
             if position is not None:
-                p0 = max(float(position[0]) + self.xrfXOffset, 0)
-                p0 = min(p0, 45)
-                p1 = float(position[1]) + self.xrfYOffset
+                p0 = max(float(position[0]) + self.xXRFOffset, 0)
+                p0 = min(p0, 58)
+                p1 = float(position[1]) + self.yXRFOffset
                 ret.append([str.format("%4.3f"%(p0)), str.format("%4.3f"%(p1))])
             else:
                 return None
@@ -49,7 +49,7 @@ class Mode():
 class TrayMode(Mode):
     def __init__(self):
         super(TrayMode, self).__init__()
-        self.xStart = 0
+        self.xStart = 5
         self.yStart = 300
         self.maxTraySize = 8
         self.numberTrayRows = 1
@@ -96,8 +96,8 @@ class FilterMode(Mode):
         ret = []
         for position in positions:
             if position is not None:
-                p0 = max(float(position[0]) + self.xrfXOffset, 0)
-                p1 = float(position[1]) + self.xrfYOffset
+                p0 = max(float(position[0]) + self.xXRFOffset, 0)
+                p1 = float(position[1]) + self.yXRFOffset
                 ret.append([str.format("%4.3f"%(p0)), str.format("%4.3f"%(p1))])
             else:
                 return None
