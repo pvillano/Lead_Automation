@@ -11,6 +11,8 @@ class Mode():
         self.zXRFOffset = 0
         self.xAdvance = 0
         self.yAdvance = 0
+        self.zStart = -30
+        self.zEnd = -58
         self.c1 = np.array([0,170,205])
         self.c2 = np.array([70,255,255])
         self.tapeMin = 100
@@ -31,6 +33,18 @@ class Mode():
 
     def advance(self, x, y):
         return x, y
+
+    def correctPositions(self, positions):
+        ret = []
+        for position in positions:
+            if position is not None:
+                p0 = max(float(position[0]) + self.xrfXOffset, 0)
+                p0 = min(p0, 45)
+                p1 = float(position[1]) + self.xrfYOffset
+                ret.append([str.format("%4.3f"%(p0)), str.format("%4.3f"%(p1))])
+            else:
+                return None
+        return ret
 
 class TrayMode(Mode):
     def __init__(self):
@@ -58,13 +72,15 @@ class FilterMode(Mode):
         self.maxTraySize = 30
         self.numberTrayRows = 3
         self.xXRFOffset = 0 #-3
-        self.yXRFOffset = -41 #-48
+        self.yXRFOffset = -36 #-48
         self.xAdvance = 0
         self.yAdvance = 40
+        self.zStart = -50
+        self.zEnd = -72
         self.c1 = np.array([0,0,0])
-        self.c2 = np.array([255,255,55])
-        self.tapeMin = 200
-        self.tapeMax = 350
+        self.c2 = np.array([255,255,40])
+        self.tapeMin = 170
+        self.tapeMax = 230
         self.findLabels = False
 
     def advance(self, x, y):
@@ -75,6 +91,17 @@ class FilterMode(Mode):
             x = x+31
             y = y
         return (x, y)
+
+    def correctPositions(self, positions):
+        ret = []
+        for position in positions:
+            if position is not None:
+                p0 = max(float(position[0]) + self.xrfXOffset, 0)
+                p1 = float(position[1]) + self.xrfYOffset
+                ret.append([str.format("%4.3f"%(p0)), str.format("%4.3f"%(p1))])
+            else:
+                return None
+        return ret
 
 def getMode(modeNumber):
     if modeNumber == 0:

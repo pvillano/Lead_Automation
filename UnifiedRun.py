@@ -68,21 +68,21 @@ class unifiedRun(QObject):
             return
       label, position = self.robot.capture()
       targetLabel = correctLabels(label, i, traySize, name)
-      targetPosition = correctPositions(position, xrfXOffset, xrfYOffset)
+      targetPosition = self.mode.correctPositions(position)
       if (targetPosition is not None) and (DEBUG or not self.xrf.error):
         if DEBUG:
           print(position)
           print(targetPosition)
           print(targetLabel)
         self.robot.sendTo(targetPosition[0][0], targetPosition[0][1])
-        self.robot.lowerTo(-58)
+        self.robot.lowerTo(self.mode.zEnd)
         while self.robot.checkMoving():
           print("sleeping")
           sleep(1)
         if not DEBUG:
           success = self.xrf.sample(targetLabel)
         else:
-          #input("Continue?")
+          sleep(1)
           success = True
         self.sampleStatusOK.emit(i+1, success)
       else:
@@ -90,7 +90,7 @@ class unifiedRun(QObject):
           self.xrf.reset()
         self.sampleStatusOK.emit(i+1, False)
       i += 1
-      self.robot.setHeight(-30)
+      self.robot.setHeight(self.mode.zStart)
     self.robot.sendTo(0, 0, 0)
     self.batchDone.emit()
   
