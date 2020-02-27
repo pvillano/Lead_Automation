@@ -14,10 +14,72 @@ from time import sleep
 
 MODES = {"Filters": 1, "Test Kits": 0, "Soil Samples": 2}
 
+class SampleDisplay(object):
+    def __init__(self, disp):
+        self.disp = disp
+
+    def create_initial(self):
+        xPos = 10
+        yPos = 10
+        ret = {}
+        for i in range(1,31):
+            ret[i] = {'selected':False, 'tested':False, 'valid':True, 'x':xPos, 'y':yPos}
+            xPos += 30
+            if xPos > 70:
+                xPos = 10
+                yPos += 30
+        return ret
+
+    def paintSample(self, sample, p, f, number):
+        cX = sample['x']
+        cY = sample['y']
+        if not sample['selected']:
+            p.setPen(QtGui.QPen(QtCore.Qt.lightGray, 2))
+        else:
+            if sample['tested']:
+                if sample['valid']:
+                    p.setPen(QtGui.QPen(QtCore.Qt.green, 2))
+                else:
+                    p.setPen(QtGui.QPen(QtCore.Qt.red, 2))
+            else:
+                p.setPen(QtGui.QPen(QtCore.Qt.black, 2))
+        p.drawEllipse(cY, cX, 20, 20)
+        p.drawText(cY, cX, 20, 20, QtCore.Qt.AlignCenter, str(number))
+
+class SampleDisplayBag(SampleDisplay):
+    def __init__(self, disp):
+        super(SampleDisplayBag, self).__init__(disp)
+
+    def create_initial(self):
+        xPos = 10
+        yPos = 10
+        ret = {}
+        for i in range(1,9):
+            ret[i] = {'selected':False, 'tested':False, 'valid':True, 'x':xPos, 'y':yPos}
+            yPos += 37.5
+        return ret
+
+    def paintSample(self, sample, p, f, number):
+        cX = sample['x']
+        cY = sample['y']
+        if not sample['selected']:
+            p.setPen(QtGui.QPen(QtCore.Qt.lightGray, 2))
+        else:
+            if sample['tested']:
+                if sample['valid']:
+                    p.setPen(QtGui.QPen(QtCore.Qt.green, 2))
+                else:
+                    p.setPen(QtGui.QPen(QtCore.Qt.red, 2))
+            else:
+                p.setPen(QtGui.QPen(QtCore.Qt.black, 2))
+        p.drawRect(cY, cX, 27.5, 80)
+        p.drawText(cY, cX, 27.5, 80, QtCore.Qt.AlignCenter, str(number))
+
 class TrayDisplay(QtWidgets.QWidget):
     def __init__(self, parent):
         super(TrayDisplay, self).__init__(parent)
         self.samples = {}
+        self.sampleType = SampleDisplay(self)
         self.populateSamples()
         self.unlockPositions()
 
@@ -30,31 +92,19 @@ class TrayDisplay(QtWidgets.QWidget):
         f.setBold(True)
         p.setFont(f)
         for sample in self.samples:
-            cX = self.samples[sample]['x']
-            cY = self.samples[sample]['y']
-            if not self.samples[sample]['selected']:
-                p.setPen(QtGui.QPen(QtCore.Qt.lightGray, 2))
-            else:
-                if self.samples[sample]['tested']:
-                    if self.samples[sample]['valid']:
-                        p.setPen(QtGui.QPen(QtCore.Qt.green, 2))
-                    else:
-                        p.setPen(QtGui.QPen(QtCore.Qt.red, 2))
-                else:
-                    p.setPen(QtGui.QPen(QtCore.Qt.black, 2))
-            p.drawEllipse(cY, cX, 20, 20)
-            p.drawText(cY, cX, 20, 20, QtCore.Qt.AlignCenter, str(sample))
+            self.sampleType.paintSample(self.samples[sample], p, f, sample)
+
+    def setSampleType(self, t):
+        if not self.locked:
+            if 0 == t:
+                self.sampleType = SampleDisplayBag(self)
+            elif 1 == t:
+                self.sampleType = SampleDisplay(self)
+            self.populateSamples()
 
 
     def populateSamples(self):
-        xPos = 10
-        yPos = 10
-        for i in range(1,31):
-            self.samples[i] = {'selected':False, 'tested':False, 'valid':True, 'x':xPos, 'y':yPos}
-            xPos += 30
-            if xPos > 70:
-                xPos = 10
-                yPos += 30
+        self.samples = self.sampleType.create_initial()
         self.update()
 
     def lockPositions(self):
@@ -149,7 +199,6 @@ class Ui_MainWindow(object):
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label)
         self.comboBox = QtWidgets.QComboBox(self.verticalLayoutWidget_2)
         self.comboBox.setObjectName("comboBox")
-        self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.comboBox)
@@ -265,6 +314,11 @@ class Ui_MainWindow(object):
 
     def sampleTypeChanged(self, s):
         self.type = MODES[s]
+        self.widget.setSampleType(self.type)
+        if not self.continuousMode:
+            self.widget.enablePositions(self.number)
+        else:
+            self.widget.enablePositions(99)
 
     def reset(self):
         self.number = 1
@@ -288,6 +342,9 @@ class Ui_MainWindow(object):
             print(e)
 
     def sendHomeThread(self):
+        '''
+        print("Homing!")
+        '''
         if self.run is None:
             tempRobot = RobotControl.robotControl()
             tempRobot.home()
@@ -349,7 +406,7 @@ class Ui_MainWindow(object):
             valid = not valid
             print(n, valid)
         sleep(1)
-        self.reEnable()
+        self.fullReEnable()
 
     def reEnable(self, time):
         print("Re-enabling buttons, tray took "+str(time)+"s")
