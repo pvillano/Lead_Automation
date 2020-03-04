@@ -50,13 +50,13 @@ class TrayMode(Mode):
     def __init__(self):
         super(TrayMode, self).__init__()
         self.xStart = 5
-        self.yStart = 300
+        self.yStart = 310
         self.maxTraySize = 8
         self.numberTrayRows = 1
         self.xXRFOffset = 0 #-3
         self.yXRFOffset = -41 #-48
         self.xAdvance = 25
-        self.yAdvance = 65.3
+        self.yAdvance = (450.0/7.0)
         self.tapeMin = 110
         self.tapeMax = 350
 

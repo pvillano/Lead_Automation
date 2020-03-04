@@ -6,7 +6,7 @@ import argparse
 from PyQt5.QtCore import QObject, pyqtSignal
 import ModeSettings
 
-DEBUG = False
+DEBUG = True
 TRAYS = 0
 FILTERS = 1
 
@@ -157,7 +157,7 @@ def correctPositions(positions, xrfXOffset, xrfYOffset):
   for position in positions:
     if position is not None:
       p0 = max(float(position[0]) + xrfXOffset, 0)
-      p0 = min(p0, 45)
+      #p0 = min(p0, 45)
       p1 = float(position[1]) + xrfYOffset
       ret.append([str.format("%4.3f"%(p0)), str.format("%4.3f"%(p1))])
     else:

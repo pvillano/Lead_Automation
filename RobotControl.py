@@ -49,12 +49,16 @@ class robotControl():
       if findLabels:
         l = tryToFindLabel(gant, cap, 3, x, yTarget)
         if "" == l:
-          gant.setZ(self.mode.zStart-10)
-          l = tryToFindLabel(gant, cap, 3, x, yTarget)
-          if "" == l:
             l = tryToFindLabel(gant, cap, 3, x, yTarget-5)
             if "" == l:
               l = tryToFindLabel(gant, cap, 3, x, yTarget+5)
+              if "" == l:
+                gant.setZ(self.mode.zStart-10)
+                l = tryToFindLabel(gant, cap, 3, x, yTarget)
+                if "" == l:
+                  l = tryToFindLabel(gant, cap, 3, x, yTarget-5)
+                  if "" == l:
+                    l = tryToFindLabel(gant, cap, 3, x, yTarget+5)
       gant.setZ(self.mode.zStart)
       labels.append(l)
       if findLabels and "" == l:
@@ -184,12 +188,16 @@ def readLabelsOld(number, x, y, gant, cap, xOffset, yOffset, color1, color2, s1,
     if findLabels:
       l = tryToFindLabel(gant, cap, 3, x, yTarget)
       if "" == l:
-        gant.setZ(-40)
-        l = tryToFindLabel(gant, cap, 3, x, yTarget)
+        l = tryToFindLabel(gant, cap, 3, x, yTarget-5)
         if "" == l:
-          l = tryToFindLabel(gant, cap, 3, x, yTarget-5)
+          l = tryToFindLabel(gant, cap, 3, x, yTarget+5)
           if "" == l:
-            l = tryToFindLabel(gant, cap, 3, x, yTarget+5)
+            gant.setZ(-40)
+            l = tryToFindLabel(gant, cap, 3, x, yTarget)
+            if "" == l:
+              l = tryToFindLabel(gant, cap, 3, x, yTarget-5)
+              if "" == l:
+                l = tryToFindLabel(gant, cap, 3, x, yTarget+5)
     gant.setZ(-30)
     labels.append(l)
     if findLabels and "" == l:
