@@ -118,18 +118,29 @@ def idTape(orange, minSize, maxSize):
 
 
 def correctAngle(pImg, rawImg, sub=True):
-  refContours, heirarchy = cv2.findContours(pImg, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+  refContours, heirarchy = cv2.findContours(pImg, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
   biggest = 0
   tAngle = 0
   tContour = 0
   tRect = None
   fContour = None
-  for c in refContours:
+  temp = rawImg.copy()
+  for i in range(len(refContours)):
+    c = refContours[i]
     area = cv2.contourArea(c)
     per = cv2.arcLength(c, False)
-    if per > 100:
+    if -1 == heirarchy[0][i][2] and per < 1500:
       rect, size = boxContour(c)
-      if size > 2000 and biggest < size:
+      x, y, w, h, _ = rect
+      '''
+      cv2.drawContours(temp, c, -1, (255,0,0), 2)
+      cv2.imshow("Current Contour", temp)
+      print("***************")
+      if size > 0:
+        print(per/size)
+      print(per)
+      cv2.waitKey()'''
+      if biggest < size and (w/h) > 3:
         biggest = size
         tAngle = rect[4]
         tRect = rect
@@ -156,9 +167,21 @@ def correctAngle(pImg, rawImg, sub=True):
   return pImg, rawImg
 
 def findSticker(img):
-  squareKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
+  smallKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
+  tinyKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
+  squareKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (40,20))
   blur = cv2.bilateralFilter(img, 9, 225, 175)
-  ret = cv2.adaptiveThreshold(blur[:,:,0], 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 25, 3)
+  ret = cv2.adaptiveThreshold(blur[:,:,1], 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 25, 3)
+  ret = cv2.dilate(ret, smallKernel, iterations=1)
+  #cv2.imshow("1D", ret)
+  ret = cv2.dilate(ret, tinyKernel, iterations=1)
+  #cv2.imshow("2D", ret)
+  ret = cv2.erode(ret, squareKernel, iterations=1)
+  ret = cv2.erode(ret, tinyKernel, iterations=1)
+  #cv2.imshow("Erosion", ret)
+  #cv2.waitKey()
+  '''cv2.imshow("Binary", ret)
+  cv2.waitKey()'''
   #ret = cv2.dilate(ret, squareKernel, iterations=2)
   #ret = cv2.erode(ret, squareKernel, iterations=2)
   #ret = cv2.morphologyEx(ret, cv2.MORPH_CLOSE, squareKernel, iterations=1)

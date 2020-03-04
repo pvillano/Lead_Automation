@@ -123,6 +123,10 @@ class TrayDisplay(QtWidgets.QWidget):
             self.update()
 
     def testResults(self, sample, passed):
+        if sample not in self.samples.keys():
+            sample = sample % 8
+            if sample == 0:
+                sample = 8
         self.samples[sample]['tested'] = True
         self.samples[sample]['valid'] = passed
         self.update()
@@ -442,6 +446,10 @@ class Ui_MainWindow(object):
 
     def nextTraySend(self):
         self.lockButtons()
+        if not self.continuousMode:
+            self.widget.reset(self.number)
+        else:
+            self.widget.reset(99)
         self.dSignal.nextTray.emit(True)
 
     def closeEvent(self, event):

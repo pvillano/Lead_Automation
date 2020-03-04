@@ -156,9 +156,9 @@ def tryToFindTape(number, x, y, cap, color1, color2, s1, s2):
     if center is not None:
       break
     i+=1
-  cv2.imshow('processView',processed)
-  cv2.waitKey()
-  cv2.destroyAllWindows()
+  #cv2.imshow('processView',processed)
+  #cv2.waitKey()
+  #cv2.destroyAllWindows()
   if center is not None:
     xTarget = (center[1] - xCenter)/pixelsToMM
     yTarget = (center[0] - yCenter)/pixelsToMM

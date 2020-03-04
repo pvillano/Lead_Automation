@@ -39,7 +39,7 @@ class Mode():
         for position in positions:
             if position is not None:
                 p0 = max(float(position[0]) + self.xXRFOffset, 0)
-                p0 = min(p0, 58)
+                #p0 = min(p0, 58)
                 p1 = float(position[1]) + self.yXRFOffset
                 ret.append([str.format("%4.3f"%(p0)), str.format("%4.3f"%(p1))])
             else:
