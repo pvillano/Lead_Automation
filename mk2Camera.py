@@ -18,33 +18,38 @@ def quadView(v1, v2, v3=None, v4=None):
   return finalView
 
 def processDirt(img):
+  threshold = 120
+  threshold2 = 0
   ret = img.copy()
+  ret = cv2.bilateralFilter(ret, 9, 225, 175)
+  color1=np.array([0,0,0])
+  color2=np.array([75,255,120])
   hsvImg = cv2.cvtColor(ret, cv2.COLOR_BGR2HSV)
-  mask = hsvImg[:,:,2]
-  ret[mask > 143] = 0
-  ret[mask <= 143] = 255
-  ret[-12:-1,:,:] = 0
-  ret[:,-12:-1,:] = 0
-  ret[0:11,:,:] = 0
-  ret[:,0:11,:] = 0
+  mask = cv2.inRange(hsvImg, color1, color2)
+  ret = cv2.bitwise_and(ret, ret, mask=mask)
+  ret[ret > 0] = 255
   ret2 = ret.copy()
+  sCKernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (10,10))
   cKernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (30,30))
+  ret = cv2.dilate(ret, sCKernel)
   ret = cv2.erode(ret, cKernel)
+  ret[-102:,:,:] = 0
+  ret[:,-102:,:] = 0
+  ret[0:101,:,:] = 0
+  ret[:,0:101,:] = 0
   dist = cv2.distanceTransform(ret[:,:,0], cv2.DIST_L2, 3)
   _,maxVal,_,maxLoc = cv2.minMaxLoc(dist)
   dist = cv2.normalize(dist, dist, 0, 1.0, cv2.NORM_MINMAX)
   _,maxVal,_,maxLoc = cv2.minMaxLoc(dist)
-  ret[:,:,0] = dist*255
-  ret[:,:,1] = dist*255
-  ret[:,:,2] = dist*255
-  print(maxVal)
+  #ret[:,:,0] = dist*255
+  #ret[:,:,1] = dist*255
+  #ret[:,:,2] = dist*255
   fin = img.copy()
   if maxVal > .9:
     cv2.circle(fin, maxLoc, 90, (0,255,0),2)
   else:
-    maxLoc = None
-  
-  return quadView(fin, ret2), maxLoc
+    maxLoc = None  
+  return quadView(fin, ret), maxLoc
 
 def findColor(img, color1=np.array([0,170,125]), color2=np.array([70,255,255])):
   hsvImg = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)

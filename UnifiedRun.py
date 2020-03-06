@@ -6,7 +6,7 @@ import argparse
 from PyQt5.QtCore import QObject, pyqtSignal
 import ModeSettings
 
-DEBUG = False
+DEBUG = True
 TRAYS = 0
 FILTERS = 1
 

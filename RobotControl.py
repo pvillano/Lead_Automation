@@ -156,7 +156,8 @@ def tryToFindTape(number, x, y, cap, color1, color2, s1, s2):
   while i < number:
     for j in range(1):
       ret, frame = cap.read()
-    processed, center = mk2Camera.processColor(frame, color1, color2, s1, s2)
+    processed, center = mk2Camera.processDirt(frame)
+    #processed, center = mk2Camera.processColor(frame, color1, color2, s1, s2)
     if center is not None:
       break
     i+=1
