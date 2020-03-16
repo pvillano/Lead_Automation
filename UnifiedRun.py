@@ -10,6 +10,7 @@ DEBUG = True
 TRAYS = 0
 FILTERS = 1
 
+#Controls a single run of samples.
 class unifiedRun(QObject):
   sampleStatusOK = pyqtSignal(int, bool)
   trayDoneTime = pyqtSignal(int)
@@ -47,11 +48,15 @@ class unifiedRun(QObject):
     traySize = self.mode.maxTraySize
     xrfXOffset, xrfYOffset, xrfZOffset = self.mode.getXRFOffset()
     self.robot.setMode(self.mode)
+    #Wait for robot to reach its start position.
     self.robot.setToStart()
     while self.robot.checkMoving():
         print("sleeping")
         sleep(1)
+    #Check that you have samples left or are running in continuous mode.
     while i < samples or -1 == samples:
+      #End of tray routine. If you've processed a multiple of the traysize,
+      # return to the home position and wait for user input.
       if (i != 0) and (((i) % traySize) == 0):
         self.robot.sendTo(0, 0)
         cTime = time()
@@ -69,6 +74,8 @@ class unifiedRun(QObject):
       label, position = self.robot.capture()
       targetLabel = correctLabels(label, i, traySize, name)
       targetPosition = self.mode.correctPositions(position)
+      #If the target and label were found, move to the target, lower onto it,
+      # and run the XRF if not in DEBUG.
       if (targetPosition is not None) and (DEBUG or not self.xrf.error):
         if DEBUG:
           print(position)
@@ -94,6 +101,7 @@ class unifiedRun(QObject):
     self.robot.sendTo(0, 0, 0)
     self.batchDone.emit()
   
+#Depreciated.
 def mainLoop(mode, samples, home = False, name="Tray"):
   start_time = time()
   (xrfXOffset, xrfYOffset, traySize) = getSettings(mode = mode)
@@ -146,7 +154,7 @@ def askToHome():
   return yes == 'y'
 
 def correctLabels(labels, i, traySize, name = "Tray"):
-  '''ELEPHANT- Label song and dance goes here
+  '''TODO: Label song and dance goes here
   ret = name
   ret += ".Item."
   ret += str((i % traySize)+1)'''
