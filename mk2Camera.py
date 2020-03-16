@@ -6,6 +6,7 @@ from imutils import contours
 import pytesseract
 import re
 
+#Purely for review. Takes 2 or 4 images, returns a composite for easy viewing
 def quadView(v1, v2, v3=None, v4=None):
   v1=cv2.resize(v1, None, fx=.5, fy=.5, interpolation = cv2.INTER_CUBIC)
   v2=cv2.resize(v2, None, fx=.5, fy=.5, interpolation = cv2.INTER_CUBIC)
@@ -17,33 +18,48 @@ def quadView(v1, v2, v3=None, v4=None):
     finalView = np.vstack((finalView, botView))
   return finalView
 
+#Mainly for display. Automatically converts gray to rgb, ret resized to match img
+def standardize(img, ret):
+  if len(ret.shape) < 3:
+    ret = cv2.cvtColor(ret, cv2.COLOR_GRAY2RGB)
+  ret = cv2.resize(ret, dsize=(img.shape[1], img.shape[0]))
+  return ret
+
+#Preliminary code for finding the dirt on a colored background
 def processDirt(img):
   threshold = 120
   threshold2 = 0
   ret = img.copy()
+  #Denoise
   ret = cv2.bilateralFilter(ret, 9, 225, 175)
   color1=np.array([0,0,0])
+  #HSV- teal, any saturation, low value
   color2=np.array([75,255,120])
+  #Remove the teal background
   hsvImg = cv2.cvtColor(ret, cv2.COLOR_BGR2HSV)
   mask = cv2.inRange(hsvImg, color1, color2)
   ret = cv2.bitwise_and(ret, ret, mask=mask)
+  #Make binary
   ret[ret > 0] = 255
   ret2 = ret.copy()
   sCKernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (10,10))
   cKernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (30,30))
+  #Dilate and errode to denoise
   ret = cv2.dilate(ret, sCKernel)
   ret = cv2.erode(ret, cKernel)
+  #Remove borders to reduce false positives
   ret[-102:,:,:] = 0
   ret[:,-102:,:] = 0
   ret[0:101,:,:] = 0
   ret[:,0:101,:] = 0
+  #Highlight largest areas of white
   dist = cv2.distanceTransform(ret[:,:,0], cv2.DIST_L2, 3)
+  #Troubleshooting
   _,maxVal,_,maxLoc = cv2.minMaxLoc(dist)
+  #Normalize for display
   dist = cv2.normalize(dist, dist, 0, 1.0, cv2.NORM_MINMAX)
+  #Find target based on distance from black
   _,maxVal,_,maxLoc = cv2.minMaxLoc(dist)
-  #ret[:,:,0] = dist*255
-  #ret[:,:,1] = dist*255
-  #ret[:,:,2] = dist*255
   fin = img.copy()
   if maxVal > .9:
     cv2.circle(fin, maxLoc, 90, (0,255,0),2)
@@ -51,13 +67,15 @@ def processDirt(img):
     maxLoc = None  
   return quadView(fin, ret), maxLoc
 
+#Wrapper to find arbitrary HSV traits. Defaults to orange tape settings.
 def findColor(img, color1=np.array([0,170,125]), color2=np.array([70,255,255])):
   hsvImg = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
   mask = cv2.inRange(hsvImg, color1, color2)
   return cv2.bitwise_and(img, img, mask=mask)
 
+#Code for finding color regions. Used with default settings to find black filters, used with alternate settings to
+# find orange tape in kits.
 def processColor(img, color1=np.array([0,0,0]), color2=np.array([255,255,55]), minSize=150, maxSize=250):
-  #For finding filters- just leave defaults for orange tape
   orange = findColor(img, color1, color2)
   orange = cv2.cvtColor(orange, cv2.COLOR_RGB2GRAY)
   center = idTape(orange, minSize, maxSize)
@@ -67,6 +85,7 @@ def processColor(img, color1=np.array([0,0,0]), color2=np.array([255,255,55]), m
     cv2.circle(img, (center[0], center[1]), 120, (0,255,0), 2)
   return quadView(img, orange), center
 
+#Wrapper to run a full process
 def processFrame(img):
   ret, process, angled, match, text, label = findSticker(img)
   ret = standardize(img, ret)
@@ -74,16 +93,13 @@ def processFrame(img):
   angled = standardize(img, angled)
   return quadView(img, ret, process, angled), label
 
-def standardize(img, ret):
-  if len(ret.shape) < 3:
-    ret = cv2.cvtColor(ret, cv2.COLOR_GRAY2RGB)
-  ret = cv2.resize(ret, dsize=(img.shape[1], img.shape[0]))
-  return ret
-
 def showImage(img):
   cv2.imshow("Display", img)
   cv2.waitKey()
 
+#Regex search. Currently set to find (any three alphabetic).(any 4 alphanumeric).(any 4 alphanumeric)
+# This could probably be made more specific for current (2020/03/16) tests
+# If you're using multiple formats, include them in an if else loop. 
 def matchLabel(text):
     match = re.search('([A-Z]){3}\.([A-Z]|[0-9]){4}\.([A-Z]|[0-9]){4}', text)
     '''if match:
@@ -100,20 +116,19 @@ def matchLabel(text):
       match = re.search('([A-Z]|[0-9]){3}\.([A-Z]|[0-9]){4}\.([A-Z]|[0-9]){2}', text)'''
     return match
 
-def matchLabel2(text):
-  match = re.search('2019\.[0-9]{3}\.[P,S,D][0-9]', text)
-  if match:
-    return match
-
+#Pytesseract wrapper. Takes a gray image, outputs found text, whether it matched the standard, and what the matching text was
 def ocr(grayIm):
     label = ""
+    #Pytesseract location
     pytesseract.pytesseract.tesseract_cmd= r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+    #Config option only allows alphanumeric characters or periods. If you use extra characters, add them here
     text = pytesseract.image_to_string(grayIm,  config="-c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ.")
     match = matchLabel(text)
     if match:
         label = match.group(0)
     return text, label, match
 
+#For testing. Obsolete  
 def collectImage(target, file=True):
   if file:
     ref = cv2.imread(target)
@@ -124,6 +139,7 @@ def collectImage(target, file=True):
   refContours, heirarchy = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
   return ref, thresh, refContours, heirarchy
 
+#Helper. Returns slightly expanded size and center of rectangle
 def getBoxChars(rect):
   xSpan = rect[2]
   ySpan = rect[3]
@@ -131,6 +147,8 @@ def getBoxChars(rect):
   yCenter = rect[1] + ySpan/2
   return (int(xSpan)+20, int(ySpan)+20), (int(xCenter), int(yCenter))
 
+#Takes a binarized image and target sizes. The binarized image is searched for
+# contours- the largest is assumed to be the tape, if it matches the target sizes.
 def idTape(orange, minSize, maxSize):
   refContours, heirarchy = cv2.findContours(orange, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
   biggest = 0
@@ -150,7 +168,9 @@ def idTape(orange, minSize, maxSize):
     return tCenter
   return None
 
-
+#Takes a denoised image and a raw image. Locates the label, then returns a
+# scaled, cropped, and rotated subregion containing only the label, held
+# horizontally.
 def correctAngle(pImg, rawImg, sub=True):
   refContours, heirarchy = cv2.findContours(pImg, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
   biggest = 0
@@ -163,43 +183,42 @@ def correctAngle(pImg, rawImg, sub=True):
     c = refContours[i]
     area = cv2.contourArea(c)
     per = cv2.arcLength(c, False)
+    #Only check contours with no children that aren't too large
     if -1 == heirarchy[0][i][2] and per < 1500:
       rect, size = boxContour(c)
       x, y, w, h, _ = rect
-      '''
-      cv2.drawContours(temp, c, -1, (255,0,0), 2)
-      cv2.imshow("Current Contour", temp)
-      print("***************")
-      if size > 0:
-        print(per/size)
-      print(per)
-      cv2.waitKey()'''
+      #Pick the largest that has vaguely correct proportions
       if biggest < size and (w/h) > 3:
         biggest = size
         tAngle = rect[4]
         tRect = rect
         fContour = c
   if tRect is not None:
+    #Take the rectangle. Add it to the process image
     tSize, tCenter = getBoxChars(tRect)
     process = pImg.copy()
     x, y, w, h, _ = tRect
     cv2.rectangle(process, (x,y), (x+w,y+h), (255,0,0))
+    #Rotate the image so the rectangle is horizontal
     if tAngle < -45:
       tAngle += 90
-    #tAngle += 180
-      #tCenter = (tCenter[1], tCenter[0])
     M = cv2.getRotationMatrix2D(tCenter ,tAngle,1)
     dims = rawImg.shape
     rows = dims[0]
     cols = dims[1]
     rotated = cv2.warpAffine(rawImg, M, (cols, rows), 1)
+    #Return the region of interest
     if sub:
       rotated = cv2.getRectSubPix(rotated, tSize, tCenter)
       return process, rotated
     else:
       return process, rotated, tCenter
+  #Only reached if no lable is found
   return pImg, rawImg
 
+#Should be findLabel, but what can you do. Takes an image, processes it to
+# remove noise, and then searches it for the label and the label for text
+# TODO: add better explanation, clean out old code.
 def findSticker(img):
   smallKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
   tinyKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
@@ -230,6 +249,8 @@ def findSticker(img):
   else:
     return ret, blur, blur, False, "", ""
 
+#Takes a contour, returns the largest square that can fit inside it
+# TODO: clarify, possibly remove
 def boxContour(c):
   rect = cv2.minAreaRect(c)
   epsilon = .01*cv2.arcLength(c, True)
@@ -242,6 +263,7 @@ def boxContour(c):
   #cv2.rectangle(img, (x,y), (x+w,y+h), (255,0,0))
   return rect, area
 
+#For testing.
 def defaultRun():
   vals = collectImage("s1.jpg")
   cv2.imshow("t",processFrame(vals[0])[0])
