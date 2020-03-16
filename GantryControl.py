@@ -3,7 +3,9 @@ from PyQt5.QtCore import QObject, pyqtSignal
 
 PORT = 'COM8'
 
+#Wrapper for hardware communications. 
 class Gantry(QObject):
+    #Hook to let GUI view current position- not in current use.
     positionChanged = pyqtSignal(str, str)
     
     def __init__(self):
@@ -55,6 +57,7 @@ class Gantry(QObject):
             pass
         return
 
+    #Depreciated.
     def sendToOld(self, x, y):
         self.moving = True
         xPos = 0
