@@ -89,7 +89,7 @@ class robotControl():
       positions.append(center)
       if center is None:
         print("Missed tape")
-    #cv2.destroyAllWindows()
+    cv2.destroyAllWindows()
     return labels, positions
 
   #Move to the next sample.
@@ -162,8 +162,8 @@ def singleLabelTry(cap, t):
     if "" != label:
       print("Found label "+label)
       i = t
-    #cv2.imshow('processView',processed)
-    #cv2.waitKey()
+    cv2.imshow('processView',processed)
+    cv2.waitKey()
     i+=1
   return label
 
@@ -178,8 +178,8 @@ def tryToFindTape(number, x, y, cap, color1, color2, s1, s2):
     if center is not None:
       break
     i+=1
-  #cv2.imshow('processView',processed)
-  #cv2.waitKey()
+  cv2.imshow('processView',processed)
+  cv2.waitKey()
   #cv2.destroyAllWindows()
   if center is not None:
     xTarget = (center[1] - xCenter)/pixelsToMM
