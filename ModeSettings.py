@@ -81,7 +81,7 @@ class FilterMode(Mode):
         self.c2 = np.array([255,255,40])
         self.tapeMin = 170
         self.tapeMax = 230
-        self.findLabels = False
+        #self.findLabels = False
 
     def advance(self, x, y):
         if x > 60:
