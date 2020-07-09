@@ -53,6 +53,7 @@ class robotControl():
     repeat = True
     #Relic from past method of queueing multiple data collections.
     for n in range(number):
+      print("Finding labels? ", findLabels)
       #Try to find label. If nothing is found, search the nearby area.
       yTarget = y+(n*yOffset)
       gant.sendTo(str.format("%4.3f"%(x)), str.format("%4.3f"%(yTarget)), str.format("%4.3f"%(self.mode.zStart)))
