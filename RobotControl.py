@@ -163,7 +163,7 @@ def singleLabelTry(cap, t):
       print("Found label "+label)
       i = t
     cv2.imshow('processView',processed)
-    cv2.waitKey()
+    cv2.waitKey(1)
     i+=1
   return label
 
@@ -179,7 +179,7 @@ def tryToFindTape(number, x, y, cap, color1, color2, s1, s2):
       break
     i+=1
   cv2.imshow('processView',processed)
-  cv2.waitKey()
+  cv2.waitKey(1)
   #cv2.destroyAllWindows()
   if center is not None:
     xTarget = (center[1] - xCenter)/pixelsToMM
