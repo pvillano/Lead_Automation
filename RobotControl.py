@@ -90,7 +90,7 @@ class robotControl():
       positions.append(center)
       if center is None:
         print("Missed tape")
-    cv2.destroyAllWindows()
+    #cv2.destroyAllWindows()
     return labels, positions
 
   #Move to the next sample.
