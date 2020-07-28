@@ -23,6 +23,7 @@ class unifiedRun(QObject):
     self.robot = RobotControl.robotControl()
     if not DEBUG:
       self.xrf = XRFControl.XRF()
+      print("XRF mode on")
 
   def cont(self, nextSample):
     if not nextSample:
