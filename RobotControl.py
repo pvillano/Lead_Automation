@@ -236,7 +236,7 @@ def readLabelsOld(number, x, y, gant, cap, xOffset, yOffset, color1, color2, s1,
     positions.append(center)
     if center is None:
       print("Missed tape")
-  cv2.destroyAllWindows()
+  #cv2.destroyAllWindows()
   return labels, positions
 
 #Depreciated.
