@@ -1,5 +1,3 @@
-import pyautogui
-from time import sleep
 from buttonTask import *
 
 PICPATH = "C:\\Users\\SciAps\\Documents\\Lead_Automation\\automationScreenshots\\"

@@ -1,6 +1,5 @@
 import RobotControl
 import XRFControl
-import cv2
 from time import sleep, time
 import argparse
 from PyQt5.QtCore import QObject, pyqtSignal

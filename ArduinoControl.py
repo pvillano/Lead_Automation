@@ -1,6 +1,5 @@
 import cv2
 import mk2Camera
-from time import sleep
 from GantryControl import Gantry
 
 # Tray settings

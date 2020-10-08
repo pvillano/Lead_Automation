@@ -1,6 +1,5 @@
 import numpy as np
 import cv2
-import time
 from mk2Camera import findSticker
 
 

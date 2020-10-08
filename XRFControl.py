@@ -1,5 +1,4 @@
 import mk2Auto as m1
-import pyautogui
 
 
 class XRF:

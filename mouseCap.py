@@ -1,4 +1,4 @@
-import pyautogui, sys
+import pyautogui
 
 try:
     while True:
