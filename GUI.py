@@ -14,6 +14,7 @@ from time import sleep
 
 MODES = {"Filters": 1, "Test Kits": 0, "Soil Samples": 2}
 
+
 class SampleDisplay(object):
     def __init__(self, disp):
         self.disp = disp
@@ -22,8 +23,14 @@ class SampleDisplay(object):
         xPos = 10
         yPos = 10
         ret = {}
-        for i in range(1,31):
-            ret[i] = {'selected':False, 'tested':False, 'valid':True, 'x':xPos, 'y':yPos}
+        for i in range(1, 31):
+            ret[i] = {
+                "selected": False,
+                "tested": False,
+                "valid": True,
+                "x": xPos,
+                "y": yPos,
+            }
             xPos += 30
             if xPos > 70:
                 xPos = 10
@@ -31,13 +38,13 @@ class SampleDisplay(object):
         return ret
 
     def paintSample(self, sample, p, f, number):
-        cX = sample['x']
-        cY = sample['y']
-        if not sample['selected']:
+        cX = sample["x"]
+        cY = sample["y"]
+        if not sample["selected"]:
             p.setPen(QtGui.QPen(QtCore.Qt.lightGray, 2))
         else:
-            if sample['tested']:
-                if sample['valid']:
+            if sample["tested"]:
+                if sample["valid"]:
                     p.setPen(QtGui.QPen(QtCore.Qt.green, 2))
                 else:
                     p.setPen(QtGui.QPen(QtCore.Qt.red, 2))
@@ -45,6 +52,7 @@ class SampleDisplay(object):
                 p.setPen(QtGui.QPen(QtCore.Qt.black, 2))
         p.drawEllipse(cY, cX, 20, 20)
         p.drawText(cY, cX, 20, 20, QtCore.Qt.AlignCenter, str(number))
+
 
 class SampleDisplayBag(SampleDisplay):
     def __init__(self, disp):
@@ -54,19 +62,25 @@ class SampleDisplayBag(SampleDisplay):
         xPos = 10
         yPos = 10
         ret = {}
-        for i in range(1,9):
-            ret[i] = {'selected':False, 'tested':False, 'valid':True, 'x':xPos, 'y':yPos}
+        for i in range(1, 9):
+            ret[i] = {
+                "selected": False,
+                "tested": False,
+                "valid": True,
+                "x": xPos,
+                "y": yPos,
+            }
             yPos += 37.5
         return ret
 
     def paintSample(self, sample, p, f, number):
-        cX = sample['x']
-        cY = sample['y']
-        if not sample['selected']:
+        cX = sample["x"]
+        cY = sample["y"]
+        if not sample["selected"]:
             p.setPen(QtGui.QPen(QtCore.Qt.lightGray, 2))
         else:
-            if sample['tested']:
-                if sample['valid']:
+            if sample["tested"]:
+                if sample["valid"]:
                     p.setPen(QtGui.QPen(QtCore.Qt.green, 2))
                 else:
                     p.setPen(QtGui.QPen(QtCore.Qt.red, 2))
@@ -74,6 +88,7 @@ class SampleDisplayBag(SampleDisplay):
                 p.setPen(QtGui.QPen(QtCore.Qt.black, 2))
         p.drawRect(cY, cX, 27.5, 80)
         p.drawText(cY, cX, 27.5, 80, QtCore.Qt.AlignCenter, str(number))
+
 
 class TrayDisplay(QtWidgets.QWidget):
     def __init__(self, parent):
@@ -102,7 +117,6 @@ class TrayDisplay(QtWidgets.QWidget):
                 self.sampleType = SampleDisplay(self)
             self.populateSamples()
 
-
     def populateSamples(self):
         self.samples = self.sampleType.create_initial()
         self.update()
@@ -117,9 +131,9 @@ class TrayDisplay(QtWidgets.QWidget):
         if not self.locked:
             for sample in self.samples:
                 if sample <= number:
-                    self.samples[sample]['selected'] = True
+                    self.samples[sample]["selected"] = True
                 else:
-                    self.samples[sample]['selected'] = False
+                    self.samples[sample]["selected"] = False
             self.update()
 
     def testResults(self, sample, passed):
@@ -127,8 +141,8 @@ class TrayDisplay(QtWidgets.QWidget):
             sample = sample % 8
             if sample == 0:
                 sample = 8
-        self.samples[sample]['tested'] = True
-        self.samples[sample]['valid'] = passed
+        self.samples[sample]["tested"] = True
+        self.samples[sample]["valid"] = passed
         self.update()
 
     def reset(self, number):
@@ -151,7 +165,7 @@ class GantryDisplay(QtWidgets.QFrame):
         pen = QtGui.QPen(QtCore.Qt.black)
         pen.setWidth(3)
         p.setPen(pen)
-        center = QtCore.QRect(self.x-3,self.y-3, self.x+3, self.y+3)
+        center = QtCore.QRect(self.x - 3, self.y - 3, self.x + 3, self.y + 3)
         p.drawLine(self.horizontalLine)
         p.drawLine(QtCore.QPoint(self.x, r.top()), QtCore.QPoint(self.x, r.bottom()))
         p.drawLine(QtCore.QPoint(r.left(), self.y), QtCore.QPoint(r.right(), self.y))
@@ -165,12 +179,13 @@ class GantryDisplay(QtWidgets.QFrame):
         p.drawPoint(QtCore.QPoint(self.x, self.y))
 
     def updatePos(self, x, y):
-        self.x = 390-int(y)/2
-        self.y = 174-int(x)*2
+        self.x = 390 - int(y) / 2
+        self.y = 174 - int(x) * 2
         self.trueX = x
         self.trueY = y
-        print("x=%d,y=%d" %(self.trueX, self.trueY))
+        print("x=%d,y=%d" % (self.trueX, self.trueY))
         self.update()
+
 
 class dummySignal(QtCore.QObject):
     nextTray = QtCore.pyqtSignal(bool)
@@ -178,8 +193,8 @@ class dummySignal(QtCore.QObject):
     def __init__(self):
         super(dummySignal, self).__init__()
 
-class Ui_MainWindow(object):
 
+class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(706, 475)
@@ -265,9 +280,9 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.spinBox.valueChanged['int'].connect(self.sampleNumberChanged)
-        self.comboBox.currentTextChanged['QString'].connect(self.sampleTypeChanged)
-        self.lineEdit.textEdited['QString'].connect(self.sampleNameChanged)
+        self.spinBox.valueChanged["int"].connect(self.sampleNumberChanged)
+        self.comboBox.currentTextChanged["QString"].connect(self.sampleTypeChanged)
+        self.lineEdit.textEdited["QString"].connect(self.sampleNameChanged)
         self.pushButton_2.clicked.connect(self.reset)
         self.pushButton.clicked.connect(self.start)
         self.pushButton_4.clicked.connect(self.sendHome)
@@ -283,10 +298,10 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.label_5.setText(_translate("MainWindow", "Begin Run"))
         self.label.setText(_translate("MainWindow", "AXLE Mode"))
-        #self.comboBox.setItemText(0, _translate("MainWindow", "Test Kits"))
+        # self.comboBox.setItemText(0, _translate("MainWindow", "Test Kits"))
         self.comboBox.setItemText(0, _translate("MainWindow", "Filters"))
         self.comboBox.setItemText(1, _translate("MainWindow", "Test Kits"))
-        #self.comboBox.setItemText(2, _translate("MainWindow", "Soil Samples"))
+        # self.comboBox.setItemText(2, _translate("MainWindow", "Soil Samples"))
         self.label_2.setText(_translate("MainWindow", "Samples"))
         self.label_3.setText(_translate("MainWindow", "Run Name"))
         self.lineEdit.setText(_translate("MainWindow", "Filters1"))
@@ -306,7 +321,7 @@ class Ui_MainWindow(object):
             self.continuousMode = False
             self.widget.enablePositions(self.number)
         else:
-            print("Error, invalid i = "+str(i))
+            print("Error, invalid i = " + str(i))
         self.centralwidget.update()
 
     def sampleNumberChanged(self, i):
@@ -346,9 +361,9 @@ class Ui_MainWindow(object):
             print(e)
 
     def sendHomeThread(self):
-        '''
+        """
         print("Homing!")
-        '''
+        """
         if self.run is None:
             tempRobot = RobotControl.robotControl()
             tempRobot.home()
@@ -366,22 +381,24 @@ class Ui_MainWindow(object):
         self.checkBox.setEnabled(False)
         self.widget.lockPositions()
         self.centralwidget.update()
-        '''
+        """
         try:
             _thread.start_new_thread(self.dummyRun, (3,))
         except Exception as e:
             print(e)
-        '''
+        """
         if self.run is None:
             self.run = UnifiedRun.unifiedRun()
             self.dSignal.nextTray.connect(self.run.cont)
-            #self.run.robot.gant.positionChanged.connect(self.displayPosition)
+            # self.run.robot.gant.positionChanged.connect(self.displayPosition)
             self.run.sampleStatusOK.connect(self.widget.testResults)
             self.run.batchDone.connect(self.fullReEnable)
             self.run.trayDoneTime.connect(self.reEnable)
         try:
             if not self.continuousMode:
-                _thread.start_new_thread(self.run.runBatch, (self.type, self.number, self.name))
+                _thread.start_new_thread(
+                    self.run.runBatch, (self.type, self.number, self.name)
+                )
             else:
                 _thread.start_new_thread(self.run.runBatch, (self.type, -1, self.name))
         except Exception as e:
@@ -406,14 +423,14 @@ class Ui_MainWindow(object):
         valid = True
         for n in range(number):
             sleep(1)
-            self.widget.testResults(n+1, valid)
+            self.widget.testResults(n + 1, valid)
             valid = not valid
             print(n, valid)
         sleep(1)
         self.fullReEnable()
 
     def reEnable(self, time):
-        print("Re-enabling buttons, tray took "+str(time)+"s")
+        print("Re-enabling buttons, tray took " + str(time) + "s")
         self.pushButton.disconnect()
         self.pushButton.clicked.connect(self.nextTraySend)
         self.pushButton_2.disconnect()
@@ -460,10 +477,10 @@ class Ui_MainWindow(object):
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
-
