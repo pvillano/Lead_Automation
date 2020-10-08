@@ -16,46 +16,6 @@ FILTERS = 1
 SOIL = 2
 
 
-class arduinoControl:
-    def __init__(self, gantry):
-        self.gant = gantry
-        self.cap = cv2.VideoCapture(1)
-        # self.maxTraySize = 8
-        self.maxTraySize = 14
-        self.setToStart()
-
-    def capture(self):
-        self.samples += 1
-        l, p = readLabels(1, self.x, self.y, self.gant, self.cap)
-        self.advance(mode=FILTERS)
-        if self.samples >= self.maxTraySize:
-            self.setToStart()
-        return l, p
-
-    def advance(self, mode=TRAYS):
-        if mode == TRAYS:
-            self.y += 65.3
-        elif mode == FILTERS:
-            self.advanceFilters()
-
-    def advanceFilters(self):
-        columnPosition = self.samples % 2
-        if columnPosition < 1:
-            # Move to next column
-            self.x = xStart
-            self.y += 45
-        else:
-            self.x -= 50
-
-    def setToStart(self):
-        self.x = xStart
-        self.y = yStart
-        self.samples = 0
-
-    def close(self):
-        self.cap.release()
-
-
 def tryToFindLabel(cap, t):
     i = 0
     label = ""
@@ -136,13 +96,3 @@ if __name__ == "__main__":
     print(positions)
     gant.sendTo(str(0), str(0))
     gant.close()
-
-"""
-  while(True):
-    ret, frame = cap.read()
-    processed = mk2Camera.processFrame(frame)
-    cv2.imshow('frame',processed)
-    if cv2.waitKey() & 0xFF == ord('q'):
-        break
-  
-  cv2.destroyAllWindows()"""

@@ -63,7 +63,7 @@ class TrayMode(Mode):
         self.tapeMax = 350
 
     def advance(self, x, y):
-        y = y + self.yAdvance
+        y += self.yAdvance
         return (x, y)
 
 
@@ -89,9 +89,9 @@ class FilterMode(Mode):
     def advance(self, x, y):
         if x > 60:
             x = self.xStart
-            y = y + 36.25
+            y += 36.25
         else:
-            x = x + 31
+            x += 31
             y = y
         return (x, y)
 

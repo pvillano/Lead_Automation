@@ -146,14 +146,14 @@ class GUITask(GenericTask):
 
     def findAny(self, pics):
         standards = 1.0
-        success = False
-        while not success:
+        while True:
             for pic in pics:
                 try:
                     x, y = pyautogui.locateCenterOnScreen(
                         pic, confidence=standards, region=self.screen
                     )
-                    success = True
+                    return True, x, y
+                # TODO
                 except Exception as e:
                     pass
             standards = standards * 0.9
@@ -161,7 +161,6 @@ class GUITask(GenericTask):
                 print("Couldn't find targets")
                 return False, -1, -1
             sleep(0.2)
-        return True, x, y
 
     def clickButton(self, pics, xOff=0, yOff=0):
         targets = []
@@ -348,5 +347,4 @@ class runSample(GUITask):
 
 if __name__ == "__main__":
     test = fullRun(None, ["s1", "s2"])
-    # test = clickClear(None)
     test.regulatedCycle()

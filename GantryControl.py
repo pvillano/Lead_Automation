@@ -57,29 +57,6 @@ class Gantry(QObject):
             pass
         return
 
-    # Depreciated.
-    def sendToOld(self, x, y):
-        self.moving = True
-        xPos = 0
-        yPos = 0
-        line1 = getLine(self.ser)
-        if "Enter target x:" != line1:
-            print(line1)
-            return
-        sendLine(self.ser, x.encode("utf-8"))
-        line2 = getLine(self.ser)
-        if "Enter target y:" != line2:
-            print(line2)
-            return
-        sendLine(self.ser, y.encode("utf-8"))
-        pos1 = getLine(self.ser)
-        xPos, yPos = sortData(pos1, xPos, yPos)
-        pos2 = getLine(self.ser)
-        xPos, yPos = sortData(pos2, xPos, yPos)
-        if self.verbose:
-            print("Arrived at (" + str(xPos) + ", " + str(yPos) + ")")
-        self.moving = False
-
     def checkMoving(self):
         if self.moving:
             getState = '{"stat":n}\n'
@@ -100,19 +77,6 @@ class Gantry(QObject):
                 self.moving = False
         return self.moving
 
-    def getPos(self):
-        getX = '{"posx":n}\n'
-        sendLine(self.ser, getX.encode("utf-8"))
-        xPos = getLine(self.ser)
-        xPos = json.loads(xPos)
-        xPos = xPos["r"]["posx"]
-        getY = '{"posy":n}\n'
-        sendLine(self.ser, getY.encode("utf-8"))
-        yPos = getLine(self.ser)
-        yPos = json.loads(yPos)
-        yPos = yPos["r"]["posy"]
-        return (xPos, yPos)
-
     def close(self):
         self.ser.close()
 
@@ -129,18 +93,7 @@ def sendLine(ser, data):
     ser.flush()
 
 
-def sortData(pos, x, y):
-    if "x" == pos[0]:
-        x = pos[16:]
-        y = y
-    if "y" == pos[0]:
-        y = pos[16:]
-        x = x
-    return x, y
-
-
 if __name__ == "__main__":
     gant = Gantry()
-    # gant.getPos()
     gant.sendTo(str(50), str(100))
     gant.sendTo(str(0), str(0))

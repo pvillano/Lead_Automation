@@ -2,6 +2,7 @@ import pyautogui
 from time import sleep
 
 PICPATH = "C:\\Users\\SciAps\\Documents\\Lead_Automation\\automationScreenshots\\"
+# TODO: rename these to have meaningful names
 ANALYZE_CHECK_I = "Capture.PNG"
 ANALYZE = "Capture1.PNG"
 ANALYZE_CHECK_F = "Capture2.PNG"
@@ -67,20 +68,18 @@ class buttonTask:
         return a != -1 and b != -1
 
     def searchRoutine(self, img):
-        ret = False
         standards = 1.0
-        while not ret:
+        while True:
             try:
                 x, y = pyautogui.locateCenterOnScreen(
                     img, confidence=standards, region=self.screen
                 )
-                ret = True
+                return x, y
             except Exception as e:
                 sleep(0.2)
                 standards = standards * 0.9
                 if standards < 0.5:
                     return -1, -1
-        return x, y
 
 
 class startTask(buttonTask):

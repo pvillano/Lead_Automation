@@ -34,6 +34,3 @@ if __name__ == "__main__":
         targetLabel = "Sample " + str(i)
         success = mXRF.sample(targetLabel)
         i += 1
-    # r = (r[0],r[1],r[2],r[3]+440)
-    # print(r)
-    # pyautogui.screenshot('temp.png', region = r)

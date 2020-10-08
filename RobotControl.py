@@ -129,16 +129,6 @@ class robotControl:
     def advance(self):
         (self.x, self.y) = self.mode.advance(self.x, self.y)
 
-    # Depreciated.
-    def advanceFilters(self):
-        columnPosition = self.samples % 3
-        if columnPosition < 1:
-            # Move to next column
-            self.x = self.xStart
-            self.y += 36.25
-        else:
-            self.x += 31
-
     def lowerTo(self, z):
         self.gant.lowerTo(str(z))
 
@@ -229,66 +219,6 @@ def tryToFindTape(number, x, y, cap, color1, color2, s1, s2):
         return None
 
 
-# Depreciated.
-def readLabelsOld(
-    number, x, y, gant, cap, xOffset, yOffset, color1, color2, s1, s2, findLabels=True
-):
-    # Tray Settings
-    # yOffset = 65.3
-    # xOffset = 25
-    # Filter Settings
-    # yOffset = 40
-    # xOffset = 0
-    labels = []
-    positions = []
-    repeat = True
-    for n in range(number):
-        yTarget = y + (n * yOffset)
-        gant.sendTo(str.format("%4.3f" % (x)), str.format("%4.3f" % (yTarget)), "-30.0")
-        l = ""
-        if findLabels:
-            l = tryToFindLabel(gant, cap, 3, x, yTarget)
-            if "" == l:
-                l = tryToFindLabel(gant, cap, 3, x, yTarget - 5)
-                if "" == l:
-                    l = tryToFindLabel(gant, cap, 3, x, yTarget + 5)
-                    if "" == l:
-                        gant.setZ(-40)
-                        l = tryToFindLabel(gant, cap, 3, x, yTarget)
-                        if "" == l:
-                            l = tryToFindLabel(gant, cap, 3, x, yTarget - 5)
-                            if "" == l:
-                                l = tryToFindLabel(gant, cap, 3, x, yTarget + 5)
-        gant.setZ(-30)
-        labels.append(l)
-        if findLabels and "" == l:
-            return labels, [None]
-        cX = x + (1 * xOffset)
-        gant.sendTo(str.format("%4.3f" % (cX)), str.format("%4.3f" % (yTarget)))
-        center = tryToFindTape(20, cX, yTarget, cap, color1, color2, s1, s2)
-        if center is None and repeat:
-            cX = x + (2 * xOffset)
-            gant.sendTo(str.format("%4.3f" % (cX)), str.format("%4.3f" % (yTarget)))
-            center = tryToFindTape(20, cX, yTarget, cap, color1, color2, s1, s2)
-            if center is None:
-                cX = x + (3 * xOffset)
-                gant.sendTo(str.format("%4.3f" % (cX)), str.format("%4.3f" % (yTarget)))
-                center = tryToFindTape(20, cX, yTarget, cap, color1, color2, s1, s2)
-        positions.append(center)
-        if center is None:
-            print("Missed tape")
-    # cv2.destroyAllWindows()
-    return labels, positions
-
-
-# Depreciated.
-def singlePass(number, gant):
-    cap = cv2.VideoCapture(1)
-    labels, positions = readLabels(number, 62.5, 205, gant, cap)
-    cap.release()
-    return (labels, positions)
-
-
 if __name__ == "__main__":
     r = robotControl(mode=FILTERS)
     r.setToStart()
@@ -296,20 +226,3 @@ if __name__ == "__main__":
         l, p = r.capture()
         print(p)
     r.close()
-    """
-  gant = Gantry()
-  labels, positions = singlePass(1, gant)
-  print(labels)
-  print(positions)
-  gant.sendTo(str(0),str(0))
-  gant.close()
-
-  #***
-  while(True):
-    ret, frame = cap.read()
-    processed = mk2Camera.processFrame(frame)
-    cv2.imshow('frame',processed)
-    if cv2.waitKey() & 0xFF == ord('q'):
-        break
-  
-  cv2.destroyAllWindows()"""
