@@ -2,7 +2,8 @@ import serial, json
 from PyQt5.QtCore import QObject, pyqtSignal
 
 PORT = "COM8"
-
+# tinyG controller, takes g code, does jerk limited motion
+# TODO link tinyG wiki
 # Wrapper for hardware communications.
 class Gantry(QObject):
     # Hook to let GUI view current position- not in current use.
@@ -16,6 +17,9 @@ class Gantry(QObject):
         self.moving = False
 
     def lowerTo(self, z):
+        """
+        motion with limit switch, if it is still attached...
+        """
         self.moving = True
         command = "g38.2 z" + str(z) + " f800\n"
         sendLine(self.ser, command.encode("utf-8"))
@@ -25,6 +29,7 @@ class Gantry(QObject):
         return
 
     def setZ(self, z):
+        #
         self.moving = True
         command = "g0 z" + str(z) + "\n"
         sendLine(self.ser, command.encode("utf-8"))
@@ -58,6 +63,9 @@ class Gantry(QObject):
         return
 
     def checkMoving(self):
+        """
+        try to get stopped signal
+        """
         if self.moving:
             getState = '{"stat":n}\n'
             sendLine(self.ser, getState.encode("utf-8"))

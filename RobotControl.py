@@ -22,7 +22,7 @@ class robotControl:
         self.xMin = 0
         self.xMax = 85
         self.yMin = 0
-        self.yMax = 780
+        self.yMax = 780 # langth of the gantry
 
     # Cludge for loading the settings for the current mode.
     def setMode(self, mode=ModeSettings.TrayMode()):
@@ -39,7 +39,7 @@ class robotControl:
         self.samples += 1
         # print(self.x, self.y)
         l, p = self.readLabels(
-            1,
+            1, # can remove this number of loops is 1
             self.x,
             self.y,
             self.gant,
@@ -91,6 +91,7 @@ class robotControl:
             if findLabels:
                 l = tryToFindLabel(gant, cap, 3, x, yTarget)
                 if "" == l:
+                    # wiggle around to try to find label
                     l = tryToFindLabel(gant, cap, 3, x, yTarget - 5)
                     if "" == l:
                         l = tryToFindLabel(gant, cap, 3, x, yTarget + 5)
@@ -108,6 +109,7 @@ class robotControl:
             cX = x + (1 * xOffset)
             # Try to find the target. If nothing is found, search along the x-axis.
             gant.sendTo(str.format("%4.3f" % (cX)), str.format("%4.3f" % (yTarget)))
+            # black sample or colored sample marker
             center = tryToFindTape(20, cX, yTarget, cap, color1, color2, s1, s2)
             if center is None and repeat:
                 cX = x + (2 * xOffset)

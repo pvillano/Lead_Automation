@@ -55,6 +55,9 @@ class SampleDisplay(object):
 
 
 class SampleDisplayBag(SampleDisplay):
+    """
+    individual sample display
+    """
     def __init__(self, disp):
         super(SampleDisplayBag, self).__init__(disp)
 
@@ -91,6 +94,9 @@ class SampleDisplayBag(SampleDisplay):
 
 
 class TrayDisplay(QtWidgets.QWidget):
+    """
+    shows multiple samples
+    """
     def __init__(self, parent):
         super(TrayDisplay, self).__init__(parent)
         self.samples = {}
@@ -151,6 +157,9 @@ class TrayDisplay(QtWidgets.QWidget):
 
 
 class GantryDisplay(QtWidgets.QFrame):
+    """
+    unused current position of sensor
+    """
     def __init__(self, parent):
         super(GantryDisplay, self).__init__(parent)
         self.setGeometry(QtCore.QRect(270, 20, 391, 175))
@@ -195,6 +204,9 @@ class dummySignal(QtCore.QObject):
 
 
 class Ui_MainWindow(object):
+    """
+    procedurally generated, layout of widgets
+    """
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(706, 475)
@@ -374,6 +386,10 @@ class Ui_MainWindow(object):
         self.centralwidget.update()
 
     def start(self):
+        """
+        where it all happens
+
+        """
         print(self.type)
         print(self.number)
         print(self.name)
@@ -389,10 +405,11 @@ class Ui_MainWindow(object):
         """
         if self.run is None:
             self.run = UnifiedRun.unifiedRun()
+            # connect to qt5 signals
             self.dSignal.nextTray.connect(self.run.cont)
             # self.run.robot.gant.positionChanged.connect(self.displayPosition)
             self.run.sampleStatusOK.connect(self.widget.testResults)
-            self.run.batchDone.connect(self.fullReEnable)
+            self.run.batchDone.connect(self.fullReEnable) # unifiedrun will call this later
             self.run.trayDoneTime.connect(self.reEnable)
         try:
             if not self.continuousMode:

@@ -41,9 +41,13 @@ class unifiedRun(QObject):
         self.batchDone.emit()
 
     def runBatch(self, mode, samples, name):
+        """
+        called to run a batch
+        """
         print("Starting batch")
         start_time = time()
         i = 0
+        # set by gui
         self.mode = ModeSettings.getMode(mode)
         traySize = self.mode.maxTraySize
         xrfXOffset, xrfYOffset, xrfZOffset = self.mode.getXRFOffset()
@@ -71,7 +75,9 @@ class unifiedRun(QObject):
                         self.robot.sendTo(0, 0, 0)
                         self.batchDone.emit()
                         return
+            #move to correct position and capture
             label, position = self.robot.capture()
+            # doesn't do anything, was supposed to do reformatting
             targetLabel = correctLabels(label, i, traySize, name)
             targetPosition = self.mode.correctPositions(position)
             # If the target and label were found, move to the target, lower onto it,
@@ -91,6 +97,7 @@ class unifiedRun(QObject):
                 else:
                     sleep(1)
                     success = True
+                # send signal
                 self.sampleStatusOK.emit(i + 1, success)
             else:
                 if not DEBUG:

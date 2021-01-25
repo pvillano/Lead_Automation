@@ -7,6 +7,7 @@ class Mode:
         self.yStart = 0
         self.maxTraySize = 0
         self.numberTrayRows = 0
+        # offset from center of camera
         self.xXRFOffset = 27
         self.yXRFOffset = 30
         self.zXRFOffset = 0
@@ -14,11 +15,12 @@ class Mode:
         self.yAdvance = 0
         self.zStart = -30
         self.zEnd = -58
+        # color range
         self.c1 = np.array([0, 170, 205])
         self.c2 = np.array([70, 255, 255])
         self.tapeMin = 100
         self.tapeMax = 250
-        self.findLabels = True
+        self.findLabels = True # depends on water filter/
 
     def getColorLimits(self):
         return (self.c1, self.c2, self.tapeMin, self.tapeMax)

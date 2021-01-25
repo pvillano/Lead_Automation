@@ -3,7 +3,7 @@ import cv2
 import pytesseract
 import re
 
-# Purely for review. Takes 2 or 4 images, returns a composite for easy viewing
+# Purely for review/debug. Takes 2 or 4 images, returns a composite for easy viewing
 def quadView(v1, v2, v3=None, v4=None):
     v1 = cv2.resize(v1, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
     v2 = cv2.resize(v2, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
@@ -25,6 +25,7 @@ def standardize(img, ret):
 
 
 # Preliminary code for finding the dirt on a colored background
+# do not trust *shrug*
 def processDirt(img):
     threshold = 120
     threshold2 = 0
@@ -68,6 +69,8 @@ def processDirt(img):
 
 
 # Wrapper to find arbitrary HSV traits. Defaults to orange tape settings.
+# lower and upper bounds in hsv, default is orange tape
+# returns part of image which falls in this color range
 def findColor(img, color1=np.array([0, 170, 125]), color2=np.array([70, 255, 255])):
     hsvImg = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsvImg, color1, color2)
@@ -76,11 +79,12 @@ def findColor(img, color1=np.array([0, 170, 125]), color2=np.array([70, 255, 255
 
 # Code for finding color regions. Used with default settings to find black filters, used with alternate settings to
 # find orange tape in kits.
+#trying to find tape or water filter
 def processColor(
     img,
     color1=np.array([0, 0, 0]),
     color2=np.array([255, 255, 55]),
-    minSize=150,
+    minSize=150, # splotch size
     maxSize=250,
 ):
     orange = findColor(img, color1, color2)
@@ -94,6 +98,7 @@ def processColor(
 
 
 # Wrapper to run a full process
+#trying to find sticker
 def processFrame(img):
     ret, process, angled, match, text, label = findSticker(img)
     ret = standardize(img, ret)
@@ -131,9 +136,10 @@ def matchLabel(text):
 def ocr(grayIm):
     label = ""
     # Pytesseract location
-    pytesseract.pytesseract.tesseract_cmd = (
-        r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-    )
+    # TODO RTODO
+    # pytesseract.pytesseract.tesseract_cmd = (
+    #     r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+    # )
     # Config option only allows alphanumeric characters or periods. If you use extra characters, add them here
     text = pytesseract.image_to_string(
         grayIm,
@@ -189,6 +195,7 @@ def idTape(orange, minSize, maxSize):
             if tSize[i] < minSize or tSize[i] > maxSize:
                 return None
         return tCenter
+    # return center if appropriate size
     return None
 
 
@@ -209,12 +216,13 @@ def correctAngle(pImg, rawImg, sub=True):
         c = refContours[i]
         area = cv2.contourArea(c)
         per = cv2.arcLength(c, False)
+        # removing children inside of label
         # Only check contours with no children that aren't too large
         if -1 == heirarchy[0][i][2] and per < 1500:
             rect, size = boxContour(c)
             x, y, w, h, _ = rect
             # Pick the largest that has vaguely correct proportions
-            if biggest < size and (w / h) > 3:
+            if biggest < size and (w / h) > 3: # label shaped
                 biggest = size
                 tAngle = rect[4]
                 tRect = rect
@@ -226,6 +234,7 @@ def correctAngle(pImg, rawImg, sub=True):
         x, y, w, h, _ = tRect
         cv2.rectangle(process, (x, y), (x + w, y + h), (255, 0, 0))
         # Rotate the image so the rectangle is horizontal
+        # dont make it upside down
         if tAngle < -45:
             tAngle += 90
         M = cv2.getRotationMatrix2D(tCenter, tAngle, 1)
@@ -233,7 +242,7 @@ def correctAngle(pImg, rawImg, sub=True):
         rows = dims[0]
         cols = dims[1]
         rotated = cv2.warpAffine(rawImg, M, (cols, rows), 1)
-        # Return the region of interest
+        # Return the rotated region of interest
         if sub:
             rotated = cv2.getRectSubPix(rotated, tSize, tCenter)
             return process, rotated
@@ -246,6 +255,7 @@ def correctAngle(pImg, rawImg, sub=True):
 # Should be findLabel, but what can you do. Takes an image, processes it to
 # remove noise, and then searches it for the label and the label for text
 # TODO: add better explanation, clean out old code.
+# filter glare and noise
 def findSticker(img):
     smallKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     tinyKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
@@ -267,9 +277,11 @@ def findSticker(img):
     # ret = cv2.dilate(ret, squareKernel, iterations=2)
     # ret = cv2.erode(ret, squareKernel, iterations=2)
     # ret = cv2.morphologyEx(ret, cv2.MORPH_CLOSE, squareKernel, iterations=1)
+    # edge finding
     ret = cv2.Canny(ret, 100, 200)
     gaus = cv2.GaussianBlur(blur, (9, 9), 10)
     unsharp = cv2.addWeighted(blur, 4, gaus, -3, 0)
+    #tries to straighten relative to camera
     process, angled = correctAngle(ret, unsharp)
     if angled is not None:
         text, label, match = ocr(angled)
