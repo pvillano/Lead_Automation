@@ -17,7 +17,7 @@ class Mode():
         self.c2 = np.array([70,255,255])
         self.tapeMin = 100
         self.tapeMax = 250
-        self.findLabels = True
+        self.findLabels = False
 
     def getColorLimits(self):
         return  (self.c1, self.c2, self.tapeMin, self.tapeMax)
@@ -63,7 +63,7 @@ class TrayMode(Mode):
     def advance(self, x, y):
         y = y + self.yAdvance
         return (x, y)
-    
+
 class FilterMode(Mode):
     def __init__(self):
         super(FilterMode, self).__init__()

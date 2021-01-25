@@ -34,7 +34,7 @@ class robotControl():
 
   def home(self):
     self.gant.home()
-    
+
   #Single basic reading. Finds label and target, moves to the next sample.
   def capture(self):
     self.samples += 1
@@ -45,7 +45,7 @@ class robotControl():
       self.setToStart()
     return l, p
 
-  #Collects the data. 
+  #Collects the data.
   # TODO: clean up.
   def readLabels(self, number, x, y, gant, cap, xOffset, yOffset, color1, color2, s1, s2, findLabels=True):
     labels = []
@@ -53,7 +53,7 @@ class robotControl():
     repeat = True
     #Relic from past method of queueing multiple data collections.
     for n in range(number):
-      print("Finding labels? ", findLabels)
+      print("Finding label? ", findLabels)
       #Try to find label. If nothing is found, search the nearby area.
       yTarget = y+(n*yOffset)
       gant.sendTo(str.format("%4.3f"%(x)), str.format("%4.3f"%(yTarget)), str.format("%4.3f"%(self.mode.zStart)))
@@ -96,7 +96,7 @@ class robotControl():
   #Move to the next sample.
   def advance(self):
     (self.x, self.y) = self.mode.advance(self.x, self.y)
-    
+
   #Depreciated.
   def advanceFilters(self):
     columnPosition = self.samples % 3
@@ -269,5 +269,5 @@ if __name__ == '__main__':
     cv2.imshow('frame',processed)
     if cv2.waitKey() & 0xFF == ord('q'):
         break
-  
+
   cv2.destroyAllWindows()'''
