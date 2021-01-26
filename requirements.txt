@@ -12,13 +12,14 @@ imutils==0.5.3
 iso8601==0.1.12
 numpy==1.16.1
 opencv-python==4.2.0.32; platform_system == "Windows"
-opencv-python-headless=4.5.1.48; platform_system == "Darwin"
+opencv-python-headless==4.5.1.48; platform_system == "Darwin"
 Pillow==5.4.1
 PyAutoGUI==0.9.41
 PyGetWindow==0.0.4
 PyMsgBox==1.0.6
 pynput==1.4
 PyQt5==5.14.1
+PyQt5-stubs==5.14.1
 PyQt5-sip==12.7.0
 PyRect==0.1.4
 PyScreeze==0.1.19
