@@ -360,10 +360,6 @@ class Ui_MainWindow(object):
         self.lineEdit.setText("Filters1")
         self.spinBox.setValue(1)
 
-    def displayPosition(self, x, y):
-        self.frame.updatePos(float(x), float(ys))
-        self.centralwidget.repaint()
-
     def sendHome(self):
         self.lockButtons()
         self.centralwidget.update()
