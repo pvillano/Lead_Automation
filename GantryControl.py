@@ -22,8 +22,8 @@ class Gantry(QObject):
         """
         self.moving = True
         command = "g38.2 z" + str(z) + " f800\n"
-        sendLine(self.ser, command.encode("utf-8"))
-        getLine(self.ser)
+        self.sendLine(command.encode("utf-8"))
+        self.getLine()
         while self.checkMoving():
             pass
         return
@@ -32,8 +32,8 @@ class Gantry(QObject):
         #
         self.moving = True
         command = "g0 z" + str(z) + "\n"
-        sendLine(self.ser, command.encode("utf-8"))
-        getLine(self.ser)
+        self.sendLine(command.encode("utf-8"))
+        self.getLine()
         while self.checkMoving():
             pass
         return
@@ -45,8 +45,8 @@ class Gantry(QObject):
         else:
             command = "g0 x" + str(x) + " y" + str(y) + "\n"
         # print(command)
-        sendLine(self.ser, command.encode("utf-8"))
-        getLine(self.ser)
+        self.sendLine(command.encode("utf-8"))
+        self.getLine()
         while self.checkMoving():
             pass
         self.positionChanged.emit(x, y)
@@ -56,8 +56,8 @@ class Gantry(QObject):
     def home(self):
         self.moving = True
         command = "g28.2 x0 y0 z0\n"
-        sendLine(self.ser, command.encode("utf-8"))
-        getLine(self.ser)
+        self.sendLine(command.encode("utf-8"))
+        self.getLine()
         while self.checkMoving():
             pass
         return
@@ -68,8 +68,8 @@ class Gantry(QObject):
         """
         if self.moving:
             getState = '{"stat":n}\n'
-            sendLine(self.ser, getState.encode("utf-8"))
-            ret = getLine(self.ser)
+            self.sendLine(getState.encode("utf-8"))
+            ret = self.getLine()
             # print(ret)
             ret = json.loads(ret)
             if "r" not in ret.keys():
@@ -88,17 +88,15 @@ class Gantry(QObject):
     def close(self):
         self.ser.close()
 
+    def getLine(self):
+        ser_bytes = self.ser.readline()
+        decoded_bytes = ser_bytes.decode("utf-8")
+        self.ser.flush()
+        return decoded_bytes
 
-def getLine(ser):
-    ser_bytes = ser.readline()
-    decoded_bytes = ser_bytes.decode("utf-8")
-    ser.flush()
-    return decoded_bytes
-
-
-def sendLine(ser, data):
-    ser.write(data)
-    ser.flush()
+    def sendLine(self, data):
+        self.ser.write(data)
+        self.ser.flush()
 
 
 if __name__ == "__main__":
