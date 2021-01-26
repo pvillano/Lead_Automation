@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import cv2
 import pytesseract
@@ -79,12 +81,12 @@ def findColor(img, color1=np.array([0, 170, 125]), color2=np.array([70, 255, 255
 
 # Code for finding color regions. Used with default settings to find black filters, used with alternate settings to
 # find orange tape in kits.
-#trying to find tape or water filter
+# trying to find tape or water filter
 def processColor(
     img,
     color1=np.array([0, 0, 0]),
     color2=np.array([255, 255, 55]),
-    minSize=150, # splotch size
+    minSize=150,  # splotch size
     maxSize=250,
 ):
     orange = findColor(img, color1, color2)
@@ -98,7 +100,7 @@ def processColor(
 
 
 # Wrapper to run a full process
-#trying to find sticker
+# trying to find sticker
 def processFrame(img):
     ret, process, angled, match, text, label = findSticker(img)
     ret = standardize(img, ret)
@@ -222,7 +224,7 @@ def correctAngle(pImg, rawImg, sub=True):
             rect, size = boxContour(c)
             x, y, w, h, _ = rect
             # Pick the largest that has vaguely correct proportions
-            if biggest < size and (w / h) > 3: # label shaped
+            if biggest < size and (w / h) > 3:  # label shaped
                 biggest = size
                 tAngle = rect[4]
                 tRect = rect
@@ -281,7 +283,7 @@ def findSticker(img):
     ret = cv2.Canny(ret, 100, 200)
     gaus = cv2.GaussianBlur(blur, (9, 9), 10)
     unsharp = cv2.addWeighted(blur, 4, gaus, -3, 0)
-    #tries to straighten relative to camera
+    # tries to straighten relative to camera
     process, angled = correctAngle(ret, unsharp)
     if angled is not None:
         text, label, match = ocr(angled)
@@ -308,11 +310,11 @@ def boxContour(c):
 
 # For testing.
 def defaultRun():
-    vals = collectImage("s1.jpg")
+    vals = collectImage(os.path.join("test_data", "s1.jpg"))
     cv2.imshow("t", processFrame(vals[0])[0])
     cv2.waitKey()
     """for i in range(1,8):
-    target = 's'+str(i)+".jpeg"
+    target = os.path.join("test_data", 's'+str(i)+".jpeg")
     vals = collectImage(target)
     findSticker(vals[0])"""
 
