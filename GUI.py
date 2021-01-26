@@ -295,7 +295,6 @@ class Ui_MainWindow(object):
         self.pushButton_2.setObjectName("pushButton_2")
         self.horizontalLayout.addWidget(self.pushButton_2)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
-        # FUUUUCK
         self.widget = TrayDisplay(self.centralwidget)
         self.widget.setGeometry(QtCore.QRect(330, 20, 311, 101))
         self.widget.setObjectName("widget")
