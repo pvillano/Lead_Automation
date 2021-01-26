@@ -58,6 +58,7 @@ class SampleDisplayBag(SampleDisplay):
     """
     individual sample display
     """
+
     def __init__(self, disp):
         super(SampleDisplayBag, self).__init__(disp)
 
@@ -97,6 +98,7 @@ class TrayDisplay(QtWidgets.QWidget):
     """
     shows multiple samples
     """
+
     def __init__(self, parent):
         super(TrayDisplay, self).__init__(parent)
         self.samples = {}
@@ -160,6 +162,7 @@ class GantryDisplay(QtWidgets.QFrame):
     """
     unused current position of sensor
     """
+
     def __init__(self, parent):
         super(GantryDisplay, self).__init__(parent)
         self.setGeometry(QtCore.QRect(270, 20, 391, 175))
@@ -207,53 +210,82 @@ class Ui_MainWindow(object):
     """
     procedurally generated, layout of widgets
     """
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(706, 475)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
+
         self.verticalLayoutWidget_2 = QtWidgets.QWidget(self.centralwidget)
         self.verticalLayoutWidget_2.setGeometry(QtCore.QRect(10, 20, 281, 201))
         self.verticalLayoutWidget_2.setObjectName("verticalLayoutWidget_2")
+
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_2)
         self.verticalLayout_2.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
+
         self.label_5 = QtWidgets.QLabel(self.verticalLayoutWidget_2)
         self.label_5.setAlignment(QtCore.Qt.AlignCenter)
         self.label_5.setObjectName("label_5")
         self.verticalLayout_2.addWidget(self.label_5)
+
         self.formLayout = QtWidgets.QFormLayout()
         self.formLayout.setObjectName("formLayout")
+
+        # axle mode
         self.label = QtWidgets.QLabel(self.verticalLayoutWidget_2)
         self.label.setObjectName("label")
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label)
+
+        # axle mode combo box
         self.comboBox = QtWidgets.QComboBox(self.verticalLayoutWidget_2)
         self.comboBox.setObjectName("comboBox")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.comboBox)
+
+        # Samples
         self.label_2 = QtWidgets.QLabel(self.verticalLayoutWidget_2)
         self.label_2.setObjectName("label_2")
         self.formLayout.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_2)
+
+        # sample number
         self.spinBox = QtWidgets.QSpinBox(self.verticalLayoutWidget_2)
         self.spinBox.setMinimum(1)
         self.spinBox.setObjectName("spinBox")
         self.formLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.spinBox)
+
         self.label_3 = QtWidgets.QLabel(self.verticalLayoutWidget_2)
         self.label_3.setObjectName("label_3")
         self.formLayout.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_3)
+
         self.lineEdit = QtWidgets.QLineEdit(self.verticalLayoutWidget_2)
         self.lineEdit.setObjectName("lineEdit")
         self.formLayout.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.lineEdit)
+
+        # checkbox
         self.checkBox = QtWidgets.QCheckBox(self.verticalLayoutWidget_2)
         self.checkBox.setText("")
         self.checkBox.setObjectName("checkBox")
         self.formLayout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.checkBox)
+
+        # continuous mode
         self.label_6 = QtWidgets.QLabel(self.verticalLayoutWidget_2)
         self.label_6.setObjectName("label_6")
         self.formLayout.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_6)
+
+        self.label_7 = QtWidgets.QLabel(self.verticalLayoutWidget_2)
+        self.label_7.setObjectName("label_7")
+        self.formLayout.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.label_7)
+
+        self.lineEdit_2 = QtWidgets.QLineEdit(self.verticalLayoutWidget_2)
+        self.lineEdit_2.setObjectName("lineEdit_2")
+        self.formLayout.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.lineEdit_2)
+
         self.verticalLayout_2.addLayout(self.formLayout)
+
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.pushButton = QtWidgets.QPushButton(self.verticalLayoutWidget_2)
@@ -263,6 +295,7 @@ class Ui_MainWindow(object):
         self.pushButton_2.setObjectName("pushButton_2")
         self.horizontalLayout.addWidget(self.pushButton_2)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
+        # FUUUUCK
         self.widget = TrayDisplay(self.centralwidget)
         self.widget.setGeometry(QtCore.QRect(330, 20, 311, 101))
         self.widget.setObjectName("widget")
@@ -283,10 +316,12 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addWidget(self.pushButton_4)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         MainWindow.setCentralWidget(self.centralwidget)
+
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 706, 22))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
+
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
@@ -321,6 +356,7 @@ class Ui_MainWindow(object):
         self.pushButton_2.setText(_translate("MainWindow", "Reset"))
         self.label_4.setText(_translate("MainWindow", "Gantry Control"))
         self.label_6.setText(_translate("MainWindow", "Continuous Mode"))
+        self.label_7.setText(_translate("MainWindow", "Sample IDs"))
         self.pushButton_4.setText(_translate("MainWindow", "Home"))
 
     def setContMode(self, i):
@@ -405,7 +441,9 @@ class Ui_MainWindow(object):
             self.dSignal.nextTray.connect(self.run.cont)
             # self.run.robot.gant.positionChanged.connect(self.displayPosition)
             self.run.sampleStatusOK.connect(self.widget.testResults)
-            self.run.batchDone.connect(self.fullReEnable) # unifiedrun will call this later
+            self.run.batchDone.connect(
+                self.fullReEnable
+            )  # unifiedrun will call this later
             self.run.trayDoneTime.connect(self.reEnable)
         try:
             if not self.continuousMode:
