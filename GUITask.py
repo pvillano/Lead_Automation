@@ -90,7 +90,7 @@ class GUITask(GenericTask):
         self.error = f(step)
 
     def unknownStep(self, step):
-        print("Unknown step %d" % step)
+        print(f"Unknown step {step:d}")
 
     def handleErrors(self):
         GenericTask.handleErrors(self)
@@ -116,7 +116,7 @@ class GUITask(GenericTask):
         self.ok = False
 
     def unknownError(self):
-        print("Unknown error %d" % self.error)
+        print(f"Unknown error {self.error:d}")
         self.ok = False
 
     def errorCorrect(self):

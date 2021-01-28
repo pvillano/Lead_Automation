@@ -195,7 +195,7 @@ class GantryDisplay(QtWidgets.QFrame):
         self.y = 174 - int(x) * 2
         self.trueX = x
         self.trueY = y
-        print("x=%d,y=%d" % (self.trueX, self.trueY))
+        print(f"x={self.trueX:d},y={self.trueY:d}")
         self.update()
 
 

@@ -117,7 +117,7 @@ def correctPositions(positions, xrfXOffset, xrfYOffset):
             p0 = max(float(position[0]) + xrfXOffset, 0)
             # p0 = min(p0, 45)
             p1 = float(position[1]) + xrfYOffset
-            ret.append([str.format("%4.3f" % (p0)), str.format("%4.3f" % (p1))])
+            ret.append([f"{p0:4.3f}", f"{p1:4.3f}"])
         else:
             return None
     return ret

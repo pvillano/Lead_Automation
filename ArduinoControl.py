@@ -45,8 +45,8 @@ def tryToFindTape(number, x, y, cap):
         xTarget = (center[1] - xCenter) / pixelsToMM
         yTarget = (center[0] - yCenter) / pixelsToMM
         return (
-            str.format("%4.3f" % (x + xTarget)),
-            str.format("%4.3f" % (y + yTarget)),
+            f"{x + xTarget:4.3f}",
+            f"{y + yTarget:4.3f}",
         )
     else:
         print("Could not find tape")
@@ -65,18 +65,18 @@ def readLabels(number, x, y, gant, cap):
     repeat = True
     for n in range(number):
         yTarget = y + (n * yOffset)
-        gant.sendTo(str.format("%4.3f" % (x)), str.format("%4.3f" % (yTarget)))
+        gant.sendTo(f"{x:4.3f}", f"{yTarget:4.3f}")
         labels.append(tryToFindLabel(cap, 0))
         cX = x - (1 * xOffset)
-        gant.sendTo(str.format("%4.3f" % (cX)), str.format("%4.3f" % (yTarget)))
+        gant.sendTo(f"{cX:4.3f}", f"{yTarget:4.3f}")
         center = tryToFindTape(20, cX, yTarget, cap)
         if center is None and repeat:
             cX = x - (1 * xOffset)
-            gant.sendTo(str.format("%4.3f" % (cX)), str.format("%4.3f" % (yTarget)))
+            gant.sendTo(f"{cX:4.3f}", f"{yTarget:4.3f}")
             center = tryToFindTape(20, cX, yTarget, cap)
             if center is None:
                 cX = x - (1 * xOffset)
-                gant.sendTo(str.format("%4.3f" % (cX)), str.format("%4.3f" % (yTarget)))
+                gant.sendTo(f"{cX:4.3f}", f"{yTarget:4.3f}")
                 center = tryToFindTape(20, cX, yTarget, cap)
         positions.append(center)
     return labels, positions
