@@ -18,11 +18,11 @@ class robotControl:
         self.gant = Gantry()
         self.cap = cv2.VideoCapture(1)
         self.setMode(mode)
-        # Hardware sepecific, width and length of the track.
+        # Hardware specific, width and length of the track.
         self.xMin = 0
         self.xMax = 85
         self.yMin = 0
-        self.yMax = 780 # langth of the gantry
+        self.yMax = 780  # length of the gantry
 
     # Cludge for loading the settings for the current mode.
     def setMode(self, mode=ModeSettings.TrayMode()):
@@ -39,7 +39,7 @@ class robotControl:
         self.samples += 1
         # print(self.x, self.y)
         l, p = self.readLabels(
-            1, # can remove this number of loops is 1
+            1,  # can remove this number of loops is 1
             self.x,
             self.y,
             self.gant,
@@ -93,15 +93,15 @@ class robotControl:
                 if "" == l:
                     # wiggle around to try to find label
                     l = tryToFindLabel(gant, cap, 3, x, yTarget - 5)
-                    if "" == l:
-                        l = tryToFindLabel(gant, cap, 3, x, yTarget + 5)
-                        if "" == l:
-                            gant.setZ(self.mode.zStart - 10)
-                            l = tryToFindLabel(gant, cap, 3, x, yTarget)
-                            if "" == l:
-                                l = tryToFindLabel(gant, cap, 3, x, yTarget - 5)
-                                if "" == l:
-                                    l = tryToFindLabel(gant, cap, 3, x, yTarget + 5)
+                if "" == l:
+                    l = tryToFindLabel(gant, cap, 3, x, yTarget + 5)
+                if "" == l:
+                    gant.setZ(self.mode.zStart - 10)
+                    l = tryToFindLabel(gant, cap, 3, x, yTarget)
+                if "" == l:
+                    l = tryToFindLabel(gant, cap, 3, x, yTarget - 5)
+                if "" == l:
+                    l = tryToFindLabel(gant, cap, 3, x, yTarget + 5)
             gant.setZ(self.mode.zStart)
             labels.append(l)
             if findLabels and "" == l:

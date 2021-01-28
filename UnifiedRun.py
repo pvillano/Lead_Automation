@@ -75,10 +75,11 @@ class unifiedRun(QObject):
                         self.robot.sendTo(0, 0, 0)
                         self.batchDone.emit()
                         return
-            #move to correct position and capture
+
+            # need to mess stuff up here
+            # move to correct position and capture
             label, position = self.robot.capture()
-            # doesn't do anything, was supposed to do reformatting
-            targetLabel = correctLabels(label, i, traySize, name)
+            targetLabel = label[0]
             targetPosition = self.mode.correctPositions(position)
             # If the target and label were found, move to the target, lower onto it,
             # and run the XRF if not in DEBUG.
@@ -107,14 +108,6 @@ class unifiedRun(QObject):
             self.robot.setHeight(self.mode.zStart)
         self.robot.sendTo(0, 0, 0)
         self.batchDone.emit()
-
-
-def correctLabels(labels, i, traySize, name="Tray"):
-    """TODO: Label song and dance goes here
-  ret = name
-  ret += ".Item."
-  ret += str((i % traySize)+1)"""
-    return labels[0]
 
 
 def correctPositions(positions, xrfXOffset, xrfYOffset):
