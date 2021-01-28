@@ -61,7 +61,7 @@ def findAltOnScreen(buttonFile, altFile, screen):
                 sleep(0.2)
                 standards = standards * 0.9
                 if standards < 0.5:
-                    print("Trouble finding %s or its alt" % buttonFile)
+                    print(f"Trouble finding {buttonFile} or its alt")
                     return -1, -1
     return x, y
 
@@ -215,13 +215,13 @@ def XRFCycle(sampleName, screen, enterData, clickStart):
     sleep(3)
     if waitFor(DONESIGN, screen):
         if clickBack(screen):
-            print("Everything fine w/ %s" % sampleName)
+            print("Everything fine w/", sampleName)
             return True
         else:
-            print("Couldn't escape display w/ %s" % sampleName)
+            print("Couldn't escape display w/", sampleName)
             return False
     else:
-        print("Timed out on finding display w/ %s" % sampleName)
+        print("Timed out on finding display w/", sampleName)
         return False
 
 

@@ -83,44 +83,46 @@ class robotControl:
             # Try to find label. If nothing is found, search the nearby area.
             yTarget = y + (n * yOffset)
             gant.sendTo(
-                str.format("%4.3f" % (x)),
-                str.format("%4.3f" % (yTarget)),
-                str.format("%4.3f" % (self.mode.zStart)),
+                f"{x:4.3f}",
+                f"{yTarget:4.3f}",
+                f"{self.mode.zStart:4.3f}",
             )
-            l = ""
+            label = ""
             if findLabels:
-                l = tryToFindLabel(gant, cap, 3, x, yTarget)
-                if "" == l:
+                label = tryToFindLabel(gant, cap, 3, x, yTarget)
+                if "" == label:
                     # wiggle around to try to find label
-                    l = tryToFindLabel(gant, cap, 3, x, yTarget - 5)
-                if "" == l:
-                    l = tryToFindLabel(gant, cap, 3, x, yTarget + 5)
-                if "" == l:
+                    label = tryToFindLabel(gant, cap, 3, x, yTarget - 5)
+                if "" == label:
+                    label = tryToFindLabel(gant, cap, 3, x, yTarget + 5)
+                if "" == label:
                     gant.setZ(self.mode.zStart - 10)
-                    l = tryToFindLabel(gant, cap, 3, x, yTarget)
-                if "" == l:
-                    l = tryToFindLabel(gant, cap, 3, x, yTarget - 5)
-                if "" == l:
-                    l = tryToFindLabel(gant, cap, 3, x, yTarget + 5)
+                    label = tryToFindLabel(gant, cap, 3, x, yTarget)
+                if "" == label:
+                    label = tryToFindLabel(gant, cap, 3, x, yTarget - 5)
+                if "" == label:
+                    label = tryToFindLabel(gant, cap, 3, x, yTarget + 5)
             gant.setZ(self.mode.zStart)
-            labels.append(l)
-            if findLabels and "" == l:
+            labels.append(label)
+            if findLabels and "" == label:
                 return labels, [None]
-            cX = x + (1 * xOffset)
+            center_x = x + (1 * xOffset)
             # Try to find the target. If nothing is found, search along the x-axis.
-            gant.sendTo(str.format("%4.3f" % (cX)), str.format("%4.3f" % (yTarget)))
+            gant.sendTo(f"{center_x:4.3f}", f"{yTarget:4.3f}")
             # black sample or colored sample marker
-            center = tryToFindTape(20, cX, yTarget, cap, color1, color2, s1, s2)
+            center = tryToFindTape(20, center_x, yTarget, cap, color1, color2, s1, s2)
             if center is None and repeat:
-                cX = x + (2 * xOffset)
-                gant.sendTo(str.format("%4.3f" % (cX)), str.format("%4.3f" % (yTarget)))
-                center = tryToFindTape(20, cX, yTarget, cap, color1, color2, s1, s2)
+                center_x = x + (2 * xOffset)
+                gant.sendTo(f"{center_x:4.3f}", f"{yTarget:4.3f}")
+                center = tryToFindTape(
+                    20, center_x, yTarget, cap, color1, color2, s1, s2
+                )
                 if center is None:
-                    cX = x + (3 * xOffset)
-                    gant.sendTo(
-                        str.format("%4.3f" % (cX)), str.format("%4.3f" % (yTarget))
+                    center_x = x + (3 * xOffset)
+                    gant.sendTo(f"{center_x:4.3f}", f"{yTarget:4.3f}")
+                    center = tryToFindTape(
+                        20, center_x, yTarget, cap, color1, color2, s1, s2
                     )
-                    center = tryToFindTape(20, cX, yTarget, cap, color1, color2, s1, s2)
             positions.append(center)
             if center is None:
                 print("Missed tape")
@@ -165,14 +167,15 @@ class robotControl:
 # Depreciated.
 def tryToFindLabel(gant, cap, t, x, y):
     i = 0
-    gant.sendTo(str.format("%4.3f" % (x)), str.format("%4.3f" % (y)))
+    gant.sendTo(f"{x:4.3f}", f"{y:4.3f}")
+    label = ""
     while i < t:
         label = singleLabelTry(cap, 3)
         if "" != label:
             i = t
         else:
             x += 5
-            gant.sendTo(str.format("%4.3f" % (x)), str.format("%4.3f" % (y)))
+            gant.sendTo(f"{x:4.3f}", f"{y:4.3f}")
         i += 1
     if "" == label:
         print("Missed label")
@@ -213,8 +216,8 @@ def tryToFindTape(number, x, y, cap, color1, color2, s1, s2):
         xTarget = (center[1] - xCenter) / pixelsToMM
         yTarget = (center[0] - yCenter) / pixelsToMM
         return (
-            str.format("%4.3f" % (x + xTarget)),
-            str.format("%4.3f" % (y + yTarget)),
+            f"{x + xTarget:4.3f}",
+            f"{y + yTarget:4.3f}",
         )
     else:
         # print("Could not find tape")

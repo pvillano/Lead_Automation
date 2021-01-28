@@ -20,7 +20,7 @@ class Mode:
         self.c2 = np.array([70, 255, 255])
         self.tapeMin = 100
         self.tapeMax = 250
-        self.findLabels = True # depends on water filter/
+        self.findLabels = True  # depends on water filter/
 
     def getColorLimits(self):
         return (self.c1, self.c2, self.tapeMin, self.tapeMax)
@@ -44,7 +44,7 @@ class Mode:
                 p0 = max(float(position[0]) + self.xXRFOffset, 0)
                 # p0 = min(p0, 58)
                 p1 = float(position[1]) + self.yXRFOffset
-                ret.append([str.format("%4.3f" % (p0)), str.format("%4.3f" % (p1))])
+                ret.append([f"{p0:4.3f}", f"{p1:4.3f}"])
             else:
                 return None
         return ret
@@ -103,7 +103,7 @@ class FilterMode(Mode):
             if position is not None:
                 p0 = max(float(position[0]) + self.xXRFOffset, 0)
                 p1 = float(position[1]) + self.yXRFOffset
-                ret.append([str.format("%4.3f" % (p0)), str.format("%4.3f" % (p1))])
+                ret.append([f"{p0:4.3f}", f"{p1:4.3f}"])
             else:
                 return None
         return ret
