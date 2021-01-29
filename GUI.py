@@ -309,6 +309,12 @@ class Ui_MainWindow(object):
         self.id_paste_box.setGeometry(QtCore.QRect(330, 121 + 20 + 40, 311, 200))
         self.id_paste_box.setObjectName("id_paste_box")
 
+        try:
+            with open("history.txt", "r") as f:
+                self.id_paste_box.setPlainText(f.read())
+        except FileNotFoundError:
+            pass
+
         self.verticalLayoutWidget = QtWidgets.QWidget(self.centraltray_display_widget)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 230, 281, 161))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
@@ -351,6 +357,8 @@ class Ui_MainWindow(object):
         self.start_or_next_tray_butt.clicked.connect(self.start)
         self.home_button.clicked.connect(self.sendHome)
         self.checkBox.stateChanged.connect(self.setContMode)
+        app.aboutToQuit.connect(self.closeEvent)
+
         self.run = None
         self.continuousMode = False
         self.reset()
@@ -547,10 +555,12 @@ class Ui_MainWindow(object):
             self.tray_display_widget.reset(99)
         self.dSignal.nextTray.emit(True)
 
-    def closeEvent(self, event):
+    def closeEvent(self):
         if self.run is not None:
             self.run.close()
-        event.accept()
+
+        with open("history.txt", "w") as f:
+            f.write(self.id_paste_box.toPlainText())
 
 
 if __name__ == "__main__":
