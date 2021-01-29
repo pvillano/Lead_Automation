@@ -105,7 +105,9 @@ class unifiedRun(QObject):
                     print(position)
                     print(targetPosition)
                     print(targetLabel)
-                print("Sending robot to ", targetPosition[0][0], ",", targetPosition[0][1])
+                print(
+                    "Sending robot to ", targetPosition[0][0], ",", targetPosition[0][1]
+                )
                 self.robot.sendTo(targetPosition[0][0], targetPosition[0][1])
                 self.robot.lowerTo(self.mode.zEnd)
                 while self.robot.checkMoving():
