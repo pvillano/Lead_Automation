@@ -55,6 +55,7 @@ class unifiedRun(QObject):
         traySize = self.mode.maxTraySize
         self.robot.setMode(self.mode)
         # Wait for robot to reach its start position.
+        print("Sending robot to start position...")
         self.robot.setToStart()
         while self.robot.checkMoving():
             print("sleeping")
@@ -64,6 +65,7 @@ class unifiedRun(QObject):
             # End of tray routine. If you've processed a multiple of the traysize,
             # return to the home position and wait for user input.
             if (i != 0) and ((i % traySize) == 0):
+                print("Sending robot to 0,0...")
                 self.robot.sendTo(0, 0)
                 cTime = time()
                 elapsed = cTime - start_time
@@ -74,6 +76,7 @@ class unifiedRun(QObject):
                     # print("sleeping")
                     sleep(1)
                     if self.done:
+                        print("Sending robot to 0,0,0...")
                         self.robot.sendTo(0, 0, 0)
                         self.batchDone.emit()
                         return
@@ -93,6 +96,7 @@ class unifiedRun(QObject):
                 # move to correct position and capture
                 label, position = self.robot.capture()
                 targetLabel = label[0]
+            print("label=", targetLabel, "  position=", position)
             targetPosition = self.mode.correctPositions(position)
             # If the target and label were found, move to the target, lower onto it,
             # and run the XRF if not in DEBUG.
@@ -101,6 +105,7 @@ class unifiedRun(QObject):
                     print(position)
                     print(targetPosition)
                     print(targetLabel)
+                print("Sending robot to ", targetPosition[0][0], ",", targetPosition[0][1])
                 self.robot.sendTo(targetPosition[0][0], targetPosition[0][1])
                 self.robot.lowerTo(self.mode.zEnd)
                 while self.robot.checkMoving():
@@ -119,6 +124,7 @@ class unifiedRun(QObject):
                 self.sampleStatusOK.emit(i + 1, False)
             i += 1
             self.robot.setHeight(self.mode.zStart)
+        print("Sending robot to 0,0,0")
         self.robot.sendTo(0, 0, 0)
         self.batchDone.emit()
 
