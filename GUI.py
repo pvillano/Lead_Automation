@@ -191,7 +191,7 @@ class GantryDisplay(QtWidgets.QFrame):
         p.drawPoint(QtCore.QPoint(self.x, self.y))
 
     def updatePos(self, x, y):
-        self.x = 390 - int(y) / 2
+        self.x = 390 - int(y) // 2
         self.y = 174 - int(x) * 2
         self.trueX = x
         self.trueY = y
@@ -276,17 +276,6 @@ class Ui_MainWindow(object):
         self.lineEdit.setObjectName("lineEdit")
         self.formLayout.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.lineEdit)
 
-        self.sample_ids_label = QtWidgets.QLabel(self.verticalLayoutWidget_2)
-        self.sample_ids_label.setObjectName("sample_ids_label")
-        self.formLayout.setWidget(
-            4, QtWidgets.QFormLayout.LabelRole, self.sample_ids_label
-        )
-
-        # my line edit
-        self.lineEdit_2 = QtWidgets.QLineEdit(self.verticalLayoutWidget_2)
-        self.lineEdit_2.setObjectName("lineEdit_2")
-        self.formLayout.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.lineEdit_2)
-
         self.verticalLayout_2.addLayout(self.formLayout)
 
         self.horizontalLayout = QtWidgets.QHBoxLayout()
@@ -307,6 +296,14 @@ class Ui_MainWindow(object):
         self.tray_display_widget = TrayDisplay(self.centraltray_display_widget)
         self.tray_display_widget.setGeometry(QtCore.QRect(330, 20, 311, 101))
         self.tray_display_widget.setObjectName("tray_display_widget")
+
+        self.id_paste_label = QtWidgets.QLabel(self.centraltray_display_widget)
+        self.id_paste_label.setObjectName("id_paste_label")
+        self.id_paste_label.setGeometry(QtCore.QRect(330, 121 + 40, 311, 20))
+
+        self.id_paste_box = QtWidgets.QPlainTextEdit(self.centraltray_display_widget)
+        self.id_paste_box.setGeometry(QtCore.QRect(330, 121 + 20 + 40, 311, 200))
+        self.id_paste_box.setObjectName("id_paste_box")
 
         self.verticalLayoutWidget = QtWidgets.QWidget(self.centraltray_display_widget)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 230, 281, 161))
@@ -371,7 +368,7 @@ class Ui_MainWindow(object):
         self.reset_or_end_run_butt.setText(_translate("MainWindow", "Reset"))
         self.label_4.setText(_translate("MainWindow", "Gantry Control"))
         self.label_6.setText(_translate("MainWindow", "Continuous Mode"))
-        self.sample_ids_label.setText(_translate("MainWindow", "Sample IDs"))
+        self.id_paste_label.setText(_translate("MainWindow", "Paste IDs Here"))
         self.home_button.setText(_translate("MainWindow", "Home"))
 
     def setContMode(self, i):
