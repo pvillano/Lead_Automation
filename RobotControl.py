@@ -35,11 +35,10 @@ class robotControl:
         self.gant.home()
 
     # Single basic reading. Finds label and target, moves to the next sample.
-    def capture(self):
+    def capture(self, scan_for_label=True):
         self.samples += 1
         # print(self.x, self.y)
         l, p = self.readLabels(
-            1,  # can remove this number of loops is 1
             self.x,
             self.y,
             self.gant,
@@ -50,7 +49,7 @@ class robotControl:
             self.c2,
             self.s1,
             self.s2,
-            self.mode.findLabels,
+            self.mode.findLabels and scan_for_label,
         )
         self.advance()
         if self.samples >= self.maxTraySize:
@@ -61,7 +60,6 @@ class robotControl:
     # TODO: clean up.
     def readLabels(
         self,
-        number,
         x,
         y,
         gant,
@@ -77,56 +75,51 @@ class robotControl:
         labels = []
         positions = []
         repeat = True
-        # Relic from past method of queueing multiple data collections.
-        for n in range(number):
-            print("Finding labels? ", findLabels)
-            # Try to find label. If nothing is found, search the nearby area.
-            yTarget = y + (n * yOffset)
-            gant.sendTo(
-                f"{x:4.3f}",
-                f"{yTarget:4.3f}",
-                f"{self.mode.zStart:4.3f}",
-            )
-            label = ""
-            if findLabels:
+        print("Finding labels? ", findLabels)
+        # Try to find label. If nothing is found, search the nearby area.
+        yTarget = y + yOffset
+        gant.sendTo(
+            f"{x:4.3f}",
+            f"{yTarget:4.3f}",
+            f"{self.mode.zStart:4.3f}",
+        )
+        label = ""
+        if findLabels:
+            label = tryToFindLabel(gant, cap, 3, x, yTarget)
+            if "" == label:
+                # wiggle around to try to find label
+                label = tryToFindLabel(gant, cap, 3, x, yTarget - 5)
+            if "" == label:
+                label = tryToFindLabel(gant, cap, 3, x, yTarget + 5)
+            if "" == label:
+                gant.setZ(self.mode.zStart - 10)
                 label = tryToFindLabel(gant, cap, 3, x, yTarget)
-                if "" == label:
-                    # wiggle around to try to find label
-                    label = tryToFindLabel(gant, cap, 3, x, yTarget - 5)
-                if "" == label:
-                    label = tryToFindLabel(gant, cap, 3, x, yTarget + 5)
-                if "" == label:
-                    gant.setZ(self.mode.zStart - 10)
-                    label = tryToFindLabel(gant, cap, 3, x, yTarget)
-                if "" == label:
-                    label = tryToFindLabel(gant, cap, 3, x, yTarget - 5)
-                if "" == label:
-                    label = tryToFindLabel(gant, cap, 3, x, yTarget + 5)
-            gant.setZ(self.mode.zStart)
-            labels.append(label)
-            if findLabels and "" == label:
-                return labels, [None]
-            center_x = x + (1 * xOffset)
-            # Try to find the target. If nothing is found, search along the x-axis.
+            if "" == label:
+                label = tryToFindLabel(gant, cap, 3, x, yTarget - 5)
+            if "" == label:
+                label = tryToFindLabel(gant, cap, 3, x, yTarget + 5)
+        gant.setZ(self.mode.zStart)
+        labels.append(label)
+        if findLabels and "" == label:
+            return labels, [None]
+        center_x = x + xOffset
+        # Try to find the target. If nothing is found, search along the x-axis.
+        gant.sendTo(f"{center_x:4.3f}", f"{yTarget:4.3f}")
+        # black sample or colored sample marker
+        center = tryToFindTape(20, center_x, yTarget, cap, color1, color2, s1, s2)
+        if center is None and repeat:
+            center_x = x + (2 * xOffset)
             gant.sendTo(f"{center_x:4.3f}", f"{yTarget:4.3f}")
-            # black sample or colored sample marker
             center = tryToFindTape(20, center_x, yTarget, cap, color1, color2, s1, s2)
-            if center is None and repeat:
-                center_x = x + (2 * xOffset)
+            if center is None:
+                center_x = x + (3 * xOffset)
                 gant.sendTo(f"{center_x:4.3f}", f"{yTarget:4.3f}")
                 center = tryToFindTape(
                     20, center_x, yTarget, cap, color1, color2, s1, s2
                 )
-                if center is None:
-                    center_x = x + (3 * xOffset)
-                    gant.sendTo(f"{center_x:4.3f}", f"{yTarget:4.3f}")
-                    center = tryToFindTape(
-                        20, center_x, yTarget, cap, color1, color2, s1, s2
-                    )
-            positions.append(center)
-            if center is None:
-                print("Missed tape")
-        # cv2.destroyAllWindows()
+        positions.append(center)
+        if center is None:
+            print("Missed tape")
         return labels, positions
 
     # Move to the next sample.

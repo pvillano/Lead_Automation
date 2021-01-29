@@ -4,7 +4,8 @@
 #
 # Created by: PyQt5 UI code generator 5.9
 #
-# WARNING! All changes made in this file will be lost!
+# WARNING! All changes made in this file will be lost! lmao
+from typing import Optional
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import UnifiedRun
@@ -211,6 +212,9 @@ class Ui_MainWindow(object):
     procedurally generated, layout of tray_display_widgets
     """
 
+    def __init__(self):
+        self.id_paste_box: Optional[QtWidgets.QPlainTextEdit] = None
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(706, 475)
@@ -339,6 +343,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
+
         self.spinBox.valueChanged["int"].connect(self.sampleNumberChanged)
         self.comboBox.currentTextChanged["QString"].connect(self.sampleTypeChanged)
         self.lineEdit.textEdited["QString"].connect(self.sampleNameChanged)
@@ -448,7 +453,7 @@ class Ui_MainWindow(object):
             print(e)
         """
         if self.run is None:
-            self.run = UnifiedRun.unifiedRun()
+            self.run = UnifiedRun.unifiedRun(self)
             # connect to qt5 signals
             self.dSignal.nextTray.connect(self.run.cont)
             # self.run.robot.gant.positionChanged.connect(self.displayPosition)
@@ -457,6 +462,7 @@ class Ui_MainWindow(object):
                 self.fullReEnable
             )  # unifiedrun will call this later
             self.run.trayDoneTime.connect(self.reEnable)
+            self.run.pop_id.connect(self.pop_id)
         try:
             if not self.continuousMode:
                 _thread.start_new_thread(
@@ -466,6 +472,15 @@ class Ui_MainWindow(object):
                 _thread.start_new_thread(self.run.runBatch, (self.type, -1, self.name))
         except Exception as e:
             print(e)
+
+    def pop_id(self):
+        raw_id_str = self.id_paste_box.toPlainText()
+        split_str = raw_id_str.split("\n", 1)  # "a b c" --> ["a", "b c"]
+        if len(split_str) > 1:
+            targetLabel, rest = split_str
+        else:
+            targetLabel, rest = raw_id_str, ""
+        self.id_paste_box.setPlainText(rest)
 
     def setRunningButtons(self):
         self.start_or_next_tray_butt.setText("Next Tray")

@@ -4,6 +4,7 @@ from time import sleep, time
 import argparse
 from PyQt5.QtCore import QObject, pyqtSignal
 import ModeSettings
+from GUI import Ui_MainWindow
 
 DEBUG = False
 TRAYS = 0
@@ -14,12 +15,14 @@ class unifiedRun(QObject):
     sampleStatusOK = pyqtSignal(int, bool)
     trayDoneTime = pyqtSignal(int)
     batchDone = pyqtSignal()
+    pop_id = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, parent_ui_window):
         super(unifiedRun, self).__init__()
         self.paused = False
         self.done = False
         self.robot = RobotControl.robotControl()
+        self.parent_ui_window: Ui_MainWindow = parent_ui_window
         if not DEBUG:
             self.xrf = XRFControl.XRF()
             print("XRF mode on")
@@ -50,7 +53,6 @@ class unifiedRun(QObject):
         # set by gui
         self.mode = ModeSettings.getMode(mode)
         traySize = self.mode.maxTraySize
-        xrfXOffset, xrfYOffset, xrfZOffset = self.mode.getXRFOffset()
         self.robot.setMode(self.mode)
         # Wait for robot to reach its start position.
         self.robot.setToStart()
@@ -61,7 +63,7 @@ class unifiedRun(QObject):
         while i < samples or -1 == samples:
             # End of tray routine. If you've processed a multiple of the traysize,
             # return to the home position and wait for user input.
-            if (i != 0) and (((i) % traySize) == 0):
+            if (i != 0) and ((i % traySize) == 0):
                 self.robot.sendTo(0, 0)
                 cTime = time()
                 elapsed = cTime - start_time
@@ -77,9 +79,20 @@ class unifiedRun(QObject):
                         return
 
             # need to mess stuff up here
-            # move to correct position and capture
-            label, position = self.robot.capture()
-            targetLabel = label[0]
+            raw_id_str = self.parent_ui_window.id_paste_box.toPlainText()
+
+            if raw_id_str:
+                split_str = raw_id_str.split("\n", 1)  # "a b c" --> ["a", "b c"]
+                if len(split_str) > 1:
+                    targetLabel, rest = split_str
+                else:
+                    targetLabel, rest = raw_id_str, ""
+                self.pop_id.emit()
+                position = self.robot.capture(scan_for_label=False)
+            else:
+                # move to correct position and capture
+                label, position = self.robot.capture()
+                targetLabel = label[0]
             targetPosition = self.mode.correctPositions(position)
             # If the target and label were found, move to the target, lower onto it,
             # and run the XRF if not in DEBUG.
