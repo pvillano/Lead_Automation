@@ -1,28 +1,28 @@
 import pyautogui
 from time import sleep
 
-PICPATH = 'C:\\Users\\SciAps\\Documents\\Lead_Automation\\automationScreenshots\\'
-ANALYZE_CHECK_I = 'Capture.PNG'
-ANALYZE = 'Capture1.PNG'
-ANALYZE_CHECK_F = 'Capture2.PNG'
-DATAENTRY = 'Capture3.PNG'
-DATA_READY = 'Capture5.PNG'
-KEYBOARD = 'Capture4.PNG'
-KEYBOARD_ALT = 'Capture4a.PNG'
-SMALL_KEYBOARD = 'Capture5.PNG'
-FRAME_TOP = 'Capture6.PNG'
-START = 'Capture7.PNG'
-CLEAR = 'Capture8.PNG'
-ENTER = 'Capture9.PNG'
-DONESIGN = 'Capture10.PNG'
-TIME = 'Capture11.PNG'
+PICPATH = "C:\\Users\\SciAps\\Documents\\Lead_Automation\\automationScreenshots\\"
+ANALYZE_CHECK_I = "Capture.PNG"
+ANALYZE = "Capture1.PNG"
+ANALYZE_CHECK_F = "Capture2.PNG"
+DATAENTRY = "Capture3.PNG"
+DATA_READY = "Capture5.PNG"
+KEYBOARD = "Capture4.PNG"
+KEYBOARD_ALT = "Capture4a.PNG"
+SMALL_KEYBOARD = "Capture5.PNG"
+FRAME_TOP = "Capture6.PNG"
+START = "Capture7.PNG"
+CLEAR = "Capture8.PNG"
+ENTER = "Capture9.PNG"
+DONESIGN = "Capture10.PNG"
+TIME = "Capture11.PNG"
 NONE = 0
 BAD_INITIAL_CONDITIONS = 1
 BAD_FINAL_CONDITIONS = 2
 NO_TARGET = 3
 
+
 class GenericTask:
-    
     def __init__(self):
         self.error = 0
         self.ok = True
@@ -46,12 +46,12 @@ class GenericTask:
         while (self.ok) and (self.error != 0):
             self.errorCorrect()
             self.triesLeft -= 1
-            if (self.triesLeft <= 0):
+            if self.triesLeft <= 0:
                 self.ok = False
             if not self.ok:
                 return
         self.triesLeft = self.maxTries
-        
+
     def regulatedCycle(self, step=None):
         self.checkIConds()
         self.handleErrors()
@@ -68,8 +68,8 @@ class GenericTask:
             return self.error
         return 0
 
+
 class GUITask(GenericTask):
-    
     def __init__(self, screen):
         super().__init__()
         self.steps = 1
@@ -90,32 +90,33 @@ class GUITask(GenericTask):
         self.error = f(step)
 
     def unknownStep(self, step):
-        print("Unknown step %d" %step)
+        print(f"Unknown step {step:d}")
 
     def handleErrors(self):
         GenericTask.handleErrors(self)
 
     def setupErrorDict(self):
         ret = {
-            BAD_INITIAL_CONDITIONS:self.startError,
-            BAD_FINAL_CONDITIONS:self.endError,
-            NO_TARGET:self.targetError}
+            BAD_INITIAL_CONDITIONS: self.startError,
+            BAD_FINAL_CONDITIONS: self.endError,
+            NO_TARGET: self.targetError,
+        }
         return ret
 
     def startError(self):
-        print(self.name+" doesn't have valid start conditions")
+        print(self.name + " doesn't have valid start conditions")
         self.ok = False
 
     def endError(self):
-        print(self.name+" couldn't produce valid end conditions")
+        print(self.name + " couldn't produce valid end conditions")
         self.ok = False
 
     def targetError(self):
-        print(self.name+" couldn't find the button it needed")
+        print(self.name + " couldn't find the button it needed")
         self.ok = False
 
     def unknownError(self):
-        print("Unknown error %d" %self.error)
+        print(f"Unknown error {self.error:d}")
         self.ok = False
 
     def errorCorrect(self):
@@ -141,24 +142,25 @@ class GUITask(GenericTask):
         if pic is None:
             return False, None
         else:
-            return True, self.picpath+pic
+            return True, self.picpath + pic
 
     def findAny(self, pics):
         standards = 1.0
-        success = False
-        while not success:
+        while True:
             for pic in pics:
                 try:
-                    x,y = pyautogui.locateCenterOnScreen(pic, confidence=standards, region=self.screen)
-                    success = True
+                    x, y = pyautogui.locateCenterOnScreen(
+                        pic, confidence=standards, region=self.screen
+                    )
+                    return True, x, y
+                # TODO
                 except Exception as e:
                     pass
-            standards = standards*.9
-            if standards <.5:
+            standards = standards * 0.9
+            if standards < 0.5:
                 print("Couldn't find targets")
                 return False, -1, -1
-            sleep(.2)
-        return True, x, y
+            sleep(0.2)
 
     def clickButton(self, pics, xOff=0, yOff=0):
         targets = []
@@ -170,7 +172,8 @@ class GUITask(GenericTask):
         if not fine:
             self.error = NO_TARGET
             return
-        pyautogui.click(x+xOff, y+yOff)
+        pyautogui.click(x + xOff, y + yOff)
+
 
 class clickAnalyze(GUITask):
     def __init__(self, screen):
@@ -180,12 +183,13 @@ class clickAnalyze(GUITask):
         self.name = "clickAnalyze"
 
     def setupStepDict(self):
-        ret = {0:self.cAnalyze}
+        ret = {0: self.cAnalyze}
         return ret
 
     def cAnalyze(self, step):
         super().clickButton([ANALYZE])
-        return(self.error)
+        return self.error
+
 
 class clickDataEntry(GUITask):
     def __init__(self, screen):
@@ -195,12 +199,13 @@ class clickDataEntry(GUITask):
         self.name = "clickDataEntry"
 
     def setupStepDict(self):
-        ret = {0:self.cDataEntry}
+        ret = {0: self.cDataEntry}
         return ret
 
     def cDataEntry(self, step):
         super().clickButton([DATAENTRY])
-        return(self.error)
+        return self.error
+
 
 class clickSample(GUITask):
     def __init__(self, screen):
@@ -210,12 +215,13 @@ class clickSample(GUITask):
         self.name = "clickSample"
 
     def setupStepDict(self):
-        ret = {0:self.cSample}
+        ret = {0: self.cSample}
         return ret
 
     def cSample(self, step):
         super().clickButton([KEYBOARD, KEYBOARD_ALT], xOff=115, yOff=0)
-        return(self.error)
+        return self.error
+
 
 class clickClear(GUITask):
     def __init__(self, screen):
@@ -225,12 +231,13 @@ class clickClear(GUITask):
         self.name = "clickClear"
 
     def setupStepDict(self):
-        ret = {0:self.cClear}
+        ret = {0: self.cClear}
         return ret
 
     def cClear(self, step):
         super().clickButton([CLEAR])
-        return(self.error)
+        return self.error
+
 
 class clickStart(GUITask):
     def __init__(self, screen):
@@ -240,12 +247,13 @@ class clickStart(GUITask):
         self.name = "clickStart"
 
     def setupStepDict(self):
-        ret = {0:self.cStart}
+        ret = {0: self.cStart}
         return ret
 
     def cStart(self, step):
         super().clickButton([START])
-        return(self.error)
+        return self.error
+
 
 class enterData(GUITask):
     def __init__(self, screen):
@@ -258,36 +266,39 @@ class enterData(GUITask):
         self.sampleName = sample
 
     def setupStepDict(self):
-        ret = {0:self.dataEntry}
+        ret = {0: self.dataEntry}
         return ret
 
     def dataEntry(self, step):
         for char in self.sampleName:
             self.fancyPrint(char)
-        pyautogui.hotkey('enter')
-        return(self.error)
-    
+        pyautogui.hotkey("enter")
+        return self.error
+
     def fancyPrint(self, char):
-        pyautogui.keyUp('shift')
+        pyautogui.keyUp("shift")
         if char.isnumeric() or char.islower():
             pyautogui.hotkey(char)
         elif char.isupper():
-            pyautogui.keyDown('shift')
+            pyautogui.keyDown("shift")
             pyautogui.hotkey(char.lower())
-            pyautogui.keyUp('shift')
-            pyautogui.press('shift')
+            pyautogui.keyUp("shift")
+            pyautogui.press("shift")
         else:
             pyautogui.hotkey(char)
+
 
 class fullRun(GUITask):
     def __init__(self, screen, sampleList):
         self.sampleList = sampleList
-        self.Fs = [clickAnalyze(screen),
-                   clickDataEntry(screen),
-                   clickSample(screen),
-                   clickClear(screen),
-                   enterData(screen),
-                   clickStart(screen)]
+        self.Fs = [
+            clickAnalyze(screen),
+            clickDataEntry(screen),
+            clickSample(screen),
+            clickClear(screen),
+            enterData(screen),
+            clickStart(screen),
+        ]
         self.Fs.append(runSample(screen, self.Fs))
         super().__init__(screen)
         self.iPic = ANALYZE_CHECK_I
@@ -296,9 +307,11 @@ class fullRun(GUITask):
         self.steps = 3
 
     def setupStepDict(self):
-        ret = {0:self.Fs[0].regulatedCycle,
-               1:self.Fs[1].regulatedCycle,
-               2:self.runAllSamples}
+        ret = {
+            0: self.Fs[0].regulatedCycle,
+            1: self.Fs[1].regulatedCycle,
+            2: self.runAllSamples,
+        }
         return ret
 
     def runAllSamples(self, step):
@@ -308,9 +321,10 @@ class fullRun(GUITask):
             self.error = run.regulatedCycle(step)
         return self.error
 
+
 class runSample(GUITask):
     def __init__(self, screen, Fs):
-        self.Fs= Fs
+        self.Fs = Fs
         super().__init__(screen)
         self.iPic = SMALL_KEYBOARD
         self.fPic = SMALL_KEYBOARD
@@ -322,13 +336,15 @@ class runSample(GUITask):
         self.Fs[4].setName(sample)
 
     def setupStepDict(self):
-        ret = {0:self.Fs[2].regulatedCycle,
-               1:self.Fs[3].regulatedCycle,
-               2:self.Fs[4].regulatedCycle,
-               3:self.Fs[5].regulatedCycle}
+        ret = {
+            0: self.Fs[2].regulatedCycle,
+            1: self.Fs[3].regulatedCycle,
+            2: self.Fs[4].regulatedCycle,
+            3: self.Fs[5].regulatedCycle,
+        }
         return ret
 
-if __name__ == '__main__':
-    test = fullRun(None, ['s1','s2'])
-    #test = clickClear(None)
+
+if __name__ == "__main__":
+    test = fullRun(None, ["s1", "s2"])
     test.regulatedCycle()
