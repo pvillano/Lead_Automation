@@ -26,6 +26,6 @@ PyScreeze==0.1.19
 pyserial==3.4
 pytesseract==0.3.0
 PyTweening==1.0.3
-PyYAML==5.1.2
+PyYAML==5.4
 six==1.12.0
 tesseract==0.1.3
